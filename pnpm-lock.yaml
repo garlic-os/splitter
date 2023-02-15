@@ -1,7 +1,6 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@playwright/test': ^1.28.1
   '@sveltejs/adapter-auto': ^2.0.0
   '@sveltejs/kit': ^1.5.0
   '@typescript-eslint/eslint-plugin': ^5.45.0
@@ -15,7 +14,6 @@ specifiers:
   vite: ^4.0.0
 
 devDependencies:
-  '@playwright/test': 1.30.0
   '@sveltejs/adapter-auto': 2.0.0_@sveltejs+kit@1.6.0
   '@sveltejs/kit': 1.6.0_svelte@3.55.1+vite@4.1.1
   '@typescript-eslint/eslint-plugin': 5.52.0_6cfvjsbua5ptj65675bqcn6oza
@@ -300,15 +298,6 @@ packages:
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.15.0
-    dev: true
-
-  /@playwright/test/1.30.0:
-    resolution: {integrity: sha512-SVxkQw1xvn/Wk/EvBnqWIq6NLo1AppwbYOjNLmyU0R1RoQ3rLEBtmjTnElcnz8VEtn11fptj1ECxK0tgURhajw==}
-    engines: {node: '>=14'}
-    hasBin: true
-    dependencies:
-      '@types/node': 18.13.0
-      playwright-core: 1.30.0
     dev: true
 
   /@polka/url/1.0.0-next.21:
@@ -1313,12 +1302,6 @@ packages:
   /picomatch/2.3.1:
     resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}
     engines: {node: '>=8.6'}
-    dev: true
-
-  /playwright-core/1.30.0:
-    resolution: {integrity: sha512-7AnRmTCf+GVYhHbLJsGUtskWTE33SwMZkybJ0v6rqR1boxq2x36U7p1vDRV7HO2IwTZgmycracLxPEJI49wu4g==}
-    engines: {node: '>=14'}
-    hasBin: true
     dev: true
 
   /postcss/8.4.21:
