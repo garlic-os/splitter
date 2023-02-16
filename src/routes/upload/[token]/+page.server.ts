@@ -11,4 +11,7 @@ export const load = (({ params }) => {
 	if (!fileEntry || fileEntry.upload_expiry < Date.now()) {
 		throw error(StatusCodes.UNAUTHORIZED, "Invalid upload token");
 	}
+	return {
+		token: params.token,
+	};
 }) satisfies PageServerLoad;
