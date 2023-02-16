@@ -1,4 +1,4 @@
-export const webserverPort: number = 3000;
+export const webappPort: number = 5173;
 export const corsProxyPort: number = 3001;
 export const databasePath: string = "./database.db";
 export const uploadTokenLifespan: number = 1000 * 60 * 60 * 24;  // 24 hours

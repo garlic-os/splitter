@@ -29,12 +29,11 @@ export const data = new Discord.SlashCommandBuilder()
 export const execute = async (interaction: Discord.ChatInputCommandInteraction): Promise<void> => {
 	const token = DB.generateToken();
 	interaction.reply(
-		`Go to http://localhost:${Config.webserverPort}/upload/${token} to upload your file.`
+		`Go to http://localhost:${Config.webappPort}/upload/${token} to upload your file.`
 	);
 
 	const fileID = BigInt(interaction.id);
 	console.log("New upload request:", fileID);
-	console.log("Interaction ID:", interaction.id);
 
 	// Add a promise to an object that other modules can access.
 	// The webserver will resolve it when the upload is complete.
@@ -60,7 +59,7 @@ export const execute = async (interaction: Discord.ChatInputCommandInteraction):
 
 	channel.send({
 		content: `${mention} posted a file: ` +
-				`http://localhost:${Config.webserverPort}/file/${interaction.id}/${filename}\n` +
+				`http://localhost:${Config.webappPort}/file/${interaction.id}/${filename}\n` +
 				`${humanFileSize(filesize, 2)}`,
 		allowedMentions: {
 			users: []
