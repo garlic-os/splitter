@@ -10,23 +10,22 @@
 	$: uploadReady = fileInput?.files?.length !== 0;
 
 	async function upload() {
-		if (!fileInput?.files) {
+		if (!fileInput.files) {
 			statusText.innerText = `❌ No file selected.`;
 			return;
 		}
 		state = "uploading";
 		statusText.innerText = `📤 Uploading...`;
 		const file = fileInput.files[0];
-		const formData = new FormData();
-		formData.append("file", file);
 		try {
 			// TODO: Replace with XMLHttpRequest to get progress
 			const response = await fetch("/file", {
 				method: "PUT",
 				headers: {
 					"Authorization": data.token,
+					"X-Filename": file.name,
 				},
-				body: formData,
+				body: file,
 			});
 			switch (response.status) {
 				case StatusCodes.CREATED:

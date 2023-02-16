@@ -29,7 +29,7 @@ export const data = new Discord.SlashCommandBuilder()
 export const execute = async (interaction: Discord.ChatInputCommandInteraction): Promise<void> => {
 	const token = DB.generateToken();
 	interaction.reply(
-		`Go to http://localhost:${Config.webserverPort}/upload?token=${token} to upload your file.`
+		`Go to http://localhost:${Config.webserverPort}/upload/${token} to upload your file.`
 	);
 
 	const fileID = BigInt(interaction.id);
