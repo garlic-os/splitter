@@ -5,13 +5,13 @@ import * as uploadCommand from "./commands/upload";
 
 
 interface DiscordSlashCommandHandler {
-	data: Discord.ApplicationCommandData;
-	execute(interaction: Discord.ChatInputCommandInteraction): Promise<void>;
+	data: Discord.SlashCommandBuilder;
+	execute(interaction: Discord.CommandInteraction): Promise<void>;
 }
 
 
 class SplitterBot extends Discord.Client {
-	commands: Discord.Collection<string, any>;
+	commands: Discord.Collection<string, DiscordSlashCommandHandler>;
 	uploadChannel: Discord.TextChannel | null;
 	ready: Promise<void>;
 
