@@ -2,11 +2,11 @@
     import type { PageData } from "../$types";
 	import StatusCodes from "http-status-codes";
 
+	let data: PageData;
 	let fileInput: HTMLInputElement;
 	let statusText: HTMLParagraphElement;
 
 	let state: "start" | "uploading" | "done" = "start";
-	let data: PageData;
 	$: uploadReady = fileInput?.files?.length !== 0;
 
 	async function upload() {
@@ -51,12 +51,16 @@
 
 
 
+<svelte:head>
+	<title>Upload | Splitter</title>
+</svelte:head>
+
 <h1>Splitter</h1>
 <h2>Upload</h2>
 <div class="upload">
 	{#if state === "start"}
 		<input type="file" bind:this={fileInput} />
-		<button on:click={upload} disabled={uploadReady}>Upload</button>
+		<button on:click={upload} disabled={!uploadReady}>Upload</button>
 	{:else if state === "uploading"}
 		<!-- ProgressBar /-->
 	{/if}

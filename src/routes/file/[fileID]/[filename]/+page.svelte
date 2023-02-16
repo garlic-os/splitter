@@ -42,6 +42,10 @@
 
 
 
+<svelte:head>
+	<title>Download | Splitter</title>
+</svelte:head>
+
 <h1>Splitter</h1>
 <h2>{data.filename}</h2>
 <div class="upload">
