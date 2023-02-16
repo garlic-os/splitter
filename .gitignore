@@ -1,3 +1,15 @@
+# IDE configuration files
+.vscode/
+
+# Svelte
+.svelte-kit/
+
+# Secrets
+.env
+config.js
+config.ts
+*.db
+
 # Logs
 logs
 *.log
