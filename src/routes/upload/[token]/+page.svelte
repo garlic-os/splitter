@@ -1,22 +1,19 @@
 <script lang="ts">
     import type { PageData } from "../$types";
+	import DropArea from "$lib/components/DropArea.svelte";
+	import ProgressBar from "$lib/components/ProgressBar.svelte";
 	import StatusCodes from "http-status-codes";
 
 	let data: PageData;
-	let fileInput: HTMLInputElement;
 	let statusText: HTMLParagraphElement;
 
 	let state: "start" | "uploading" | "done" = "start";
-	$: uploadReady = fileInput?.files?.length !== 0;
+	let percent = 0;  // [0-100]
 
-	async function upload() {
-		if (!fileInput.files) {
-			statusText.innerText = `❌ No file selected.`;
-			return;
-		}
+	async function upload(event: CustomEvent): Promise<void> {
 		state = "uploading";
 		statusText.innerText = `📤 Uploading...`;
-		const file = fileInput.files[0];
+		const file = event.detail.file;
 		try {
 			// TODO: Replace with XMLHttpRequest to get progress
 			const response = await fetch("/file", {
@@ -59,10 +56,10 @@
 <h2>Upload</h2>
 <div class="upload">
 	{#if state === "start"}
-		<input type="file" bind:this={fileInput} />
-		<button on:click={upload} disabled={!uploadReady}>Upload</button>
+		<DropArea on:fileChange={upload} />
 	{:else if state === "uploading"}
-		<!-- ProgressBar /-->
+		<!-- TODO: Set percent from upload progress -->
+		<ProgressBar percent={percent}/>
 	{/if}
 	<p bind:this={statusText}></p>
 </div>
@@ -78,34 +75,5 @@
 		border-radius: 2rem;
 		width: 80ch;
 		height: 20rem;
-	}
-
-	.upload input {
-		margin-bottom: 1rem;
-	}
-
-	.upload button {
-		padding: 0.5rem 1rem;
-		border: 1px solid #000;
-		border-radius: 0.25rem;
-		background: #fff;
-		cursor: pointer;
-	}
-
-	.upload button:hover {
-		background: #eee;
-	}
-
-	.upload button:active {
-		background: #ddd;
-	}
-
-	.upload button:focus {
-		outline: none;
-	}
-
-	.upload button:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
 	}
 </style>

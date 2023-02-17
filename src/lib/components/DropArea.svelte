@@ -1,7 +1,8 @@
 <script lang="ts">
+	import { createEventDispatcher } from "svelte";
+
+	const dispatch = createEventDispatcher();
 	let input: HTMLInputElement;
-	
-	$: file = input.files?.item(0) ?? null;
 
 	// FUNNY BUSINESS: This number's truthiness determines the component's
 	// .dragover class state.
@@ -27,24 +28,24 @@
 		event.preventDefault();
 	}
 
-	function clear(event: Event): void {
-		event.stopPropagation();  // Prevent "choose" dialog re-trigger
-		input.value = "";
-	}
-
 	function handleKeypress(event: KeyboardEvent): void {
 		if (event.key === "Enter" || event.key === " ") {
 			input.click();
 		}
+	}
+
+	function handleChange(): void {
+		dispatch("fileChange", {
+			file: input.files?.item(0) ?? null,
+		});
 	}
 </script>
 
 
 
 <div class="drop-area"
-	 class:empty={!file}
 	 class:dragover
-	 on:click={ () => file || input.click() }
+	 on:click={ () => input.click() }
 	 on:keypress={handleKeypress}
 	 on:dragenter={ () => ++dragover }
 	 on:dragleave={ () => --dragover }
@@ -53,7 +54,7 @@
 >
 	<div class="file icon" />
 	<label>Choose or drag and drop a file
-		<input type="file" bind:this={input} />
+		<input type="file" bind:this={input} on:change={handleChange} />
 	</label>
 </div>
 
@@ -64,7 +65,6 @@
 		position: relative;
 		border: 2px solid #7d8084;
 		border-radius: 50px;
-		overflow: hidden;  /* Clip content's borders, too */
 		width: 90%;
 		max-width: 100%;
 		height: 65%;
@@ -75,15 +75,15 @@
 		transition: all 125ms;
 	}
 
-	.drop-area.empty:active {
+	.drop-area:active {
 		transform: scale(99%);
 	}
 
-	.drop-area.empty:hover, .drop-area.empty.dragover {
+	.drop-area:hover, .drop-area.dragover {
 		border-color: white;
 	}
 
-	.drop-area.empty {
+	.drop-area {
 		cursor: pointer;
 		border-style: dashed;
 	}
@@ -94,20 +94,6 @@
 
 	input {
 		display: none;
-	}
-
-	button {
-		cursor: pointer;
-		background-color: black;
-		transition: all 125ms;
-	}
-
-	button:hover {
-		border-color: white;
-	}
-
-	button:active {
-		transform: scale(93%);
 	}
 
 	.icon {
@@ -122,27 +108,5 @@
 
 	.icon.file {
 		background-image: url("../img/image-file.svg");
-	}
-
-	.icon.delete {
-		background-image: url("../img/trash.svg");
-	}
-
-	.delete {
-		--side-length: 3.5rem;
-		position: absolute;
-		right: 1rem; top: 1rem;
-		width: var(--side-length);
-		height: var(--side-length);
-		border-radius: 100%;
-		background-size: 80%;
-		background-repeat: no-repeat;
-		background-position: 7px;  /* This SVG isn't on center 😛 */
-	}
-
-	img {
-		max-width: 100%;
-		height: 100%;
-		object-fit: contain;
 	}
 </style>
