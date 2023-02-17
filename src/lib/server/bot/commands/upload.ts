@@ -40,11 +40,7 @@ export const execute = async (interaction: Discord.ChatInputCommandInteraction):
 	const uploadComplete: Promise<DB.UploadReport> = new Promise( (resolve, reject) => {
 		DB.pendingUploads.set(fileID, { resolve, reject });
 	});
-	DB.reserveUpload(
-		fileID,
-		BigInt(interaction.user.id),
-		token
-	);
+	DB.reserveUpload(fileID, BigInt(interaction.user.id), token);
 	const { filename, filesize } = await uploadComplete;
 
 	let mention: string;
