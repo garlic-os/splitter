@@ -15,7 +15,9 @@
 	let dragover = 0;
 
 	function handleDrop(event: DragEvent): void {
-		event.preventDefault();  // Prevent opening image in new tab
+		// If this event is not prevented on the drop area <div>, the inner
+		// <input> element will miss it
+		event.preventDefault();
 		dragover = 0;
 	}
 
@@ -49,17 +51,10 @@
 	 on:dragover={handleDragover}
 	 on:drop={handleDrop}
 >
-	{#if file}
-		<img alt="Input" src={URL.createObjectURL(file)} />
-		<button class="delete icon" on:click={clear} />
-	{:else}
-		<div class="file icon" />
-		<label>Choose or drag and drop a file
-			<input type="file"
-				bind:this={input}
-			/>
-		</label>
-	{/if}
+	<div class="file icon" />
+	<label>Choose or drag and drop a file
+		<input type="file" bind:this={input} />
+	</label>
 </div>
 
 
