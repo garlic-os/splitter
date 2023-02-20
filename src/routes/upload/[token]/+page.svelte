@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { PageData } from "../$types";
+    import type { PageData } from "./$types";
 	import DropArea from "$lib/components/DropArea.svelte";
 	import ProgressBar from "$lib/components/ProgressBar.svelte";
 	import StatusCodes from "http-status-codes";
