@@ -59,7 +59,7 @@
 		<DropArea on:fileChange={upload} />
 	{:else if state === "uploading"}
 		<!-- TODO: Set percent from upload progress -->
-		<ProgressBar percent={percent}/>
+		<ProgressBar {percent}/>
 	{/if}
 	<p bind:this={statusText}></p>
 </div>
