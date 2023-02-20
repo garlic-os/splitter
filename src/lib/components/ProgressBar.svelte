@@ -35,14 +35,14 @@
 	.progress-bar {
 		height: 0.5rem;
 		width: 12rem;
-		background-color: var(--brown);
+		background-color: #603010;
 		animation: squiggly-bar 1s linear infinite;
 	}
 
 	.completeness {
 		height: 100%;
 		max-width: 100%;
-		background-color: var(--orange-2);
+		background-color: #e97629;
 		transition: width 0.5s ease-in-out;
 	}
 </style>
