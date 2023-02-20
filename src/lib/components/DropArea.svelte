@@ -115,6 +115,6 @@
 	}
 
 	.icon.file {
-		background-image: url("../img/image-file.svg");
+		background-image: url("/file-icon.svg");
 	}
 </style>
