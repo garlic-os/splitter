@@ -1,10 +1,10 @@
 <script lang="ts">
-    import type { PageData } from "./$types";
+    import type { PageServerData } from "./$types";
 	import DropArea from "$lib/components/DropArea.svelte";
 	import ProgressBar from "$lib/components/ProgressBar.svelte";
 	import StatusCodes from "http-status-codes";
 
-	let data: PageData;
+	export let data: PageServerData;
 	let statusText: HTMLParagraphElement;
 
 	let state: "start" | "uploading" | "done" = "start";

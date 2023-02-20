@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { PageData } from "./$types";
+	import type { PageServerData } from "./$types";
 	import { onMount } from "svelte";
 
-	let data: PageData;
+	export let data: PageServerData;
 	let state: "downloading" | "done" = "downloading";
 	let downloadURL = "";
 
