@@ -1,5 +1,7 @@
 <script lang="ts">
     import type { PageServerData } from "./$types";
+	import type { FileChangeEventDetail } from "$lib/components/DropArea.svelte";
+
 	import DropArea from "$lib/components/DropArea.svelte";
 	import ProgressBar from "$lib/components/ProgressBar.svelte";
 	import StatusCodes from "http-status-codes";
@@ -10,7 +12,7 @@
 	let state: "start" | "uploading" | "done" = "start";
 	let percent = 0;  // [0-100]
 
-	async function upload(event: CustomEvent): Promise<void> {
+	async function upload(event: CustomEvent<FileChangeEventDetail>): Promise<void> {
 		state = "uploading";
 		statusText.innerText = `📤 Uploading...`;
 		const file = event.detail.file;

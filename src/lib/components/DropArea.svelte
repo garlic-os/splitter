@@ -1,7 +1,15 @@
+<script lang="ts" context="module">
+	export type FileChangeEventDetail = {
+		file: File;
+	};
+</script>
+
 <script lang="ts">
 	import { createEventDispatcher } from "svelte";
 
-	const dispatch = createEventDispatcher();
+	const dispatch = createEventDispatcher<{
+		fileChange: FileChangeEventDetail;
+	}>();
 	let input: HTMLInputElement;
 
 	// FUNNY BUSINESS: This number's truthiness determines the component's
@@ -35,9 +43,9 @@
 	}
 
 	function handleChange(): void {
-		dispatch("fileChange", {
-			file: input.files?.item(0) ?? null,
-		});
+		const file = input?.files?.item(0);
+		if (!file) return;
+		dispatch("fileChange", { file });
 	}
 </script>
 
