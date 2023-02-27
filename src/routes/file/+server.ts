@@ -6,35 +6,99 @@ import * as DB from "$lib/server/database";
 import * as bot from "$lib/server/bot";
 
 
-async function readStream(
-	reader: ReadableStreamBYOBReader,
-	buffer: ArrayBuffer,
+/**
+ * Splits or merge the incoming stream into chunks of the given size.
+ */
+class SetSizeChunkStream extends TransformStream<Uint8Array, Uint8Array> {
+	private buffer: Uint8Array;
+	private offset: number;
+
+	constructor(size: number) {
+		super({
+			transform: (chunk, controller) => {
+				// Copy the chunk into the buffer.
+				this.buffer.set(chunk, this.offset);
+				this.offset += chunk.byteLength;
+
+				// If the buffer is full, send it to the next stream.
+				if (this.offset === size) {
+					controller.enqueue(this.buffer);
+					this.buffer = new Uint8Array(size);
+					this.offset = 0;
+				}
+			},
+			flush: (controller) => {
+				// Send the remaining data to the next stream.
+				if (this.offset > 0) {
+					controller.enqueue(this.buffer.subarray(0, this.offset));
+				}
+			},
+		});
+
+		this.buffer = new Uint8Array(size);
+		this.offset = 0;
+	}
+}
+
+
+// Merge the stream into Config.partSize chunks and upload each to Discord.
+// Data may come in chunks of any size, but we want them to be Discord's
+// max file size.
+async function splitAndUpload(
+	stream: ReadableStream<Uint8Array>,
 	filename: string,
-	fileEntry: Pick<DB.FileEntry, "id" | "upload_expiry">,
+	fileEntry: Pick<DB.FileEntry, "id" | "uploadExpiry">,
 ): Promise<number> {
-	let bytesReceived = 0;
-	let offset = 0;
-	let partNumber = 0;
+	console.debug("Reading stream...");
+	const originalReader = stream.getReader();
+	const chunkStream = new SetSizeChunkStream(Config.partSize);
+	const chunkWriter = chunkStream.writable.getWriter();
+	const chunkReader = chunkStream.readable.getReader();
+	let bytesRead = 0;
 
-	while (true) {
-		const view = new Uint8Array(buffer, offset, buffer.byteLength - offset);
-		const result = await reader.read(view);
-		if (result.done) {
-			console.debug(`readStream() complete. Total bytes: ${bytesReceived}`);
-			return bytesReceived;
+	// Pipe each chunk to the SetSizeChunkStream.
+	const makingChunks = (async () => {
+		while (true) {
+			const result = await originalReader.read();
+			if (result.done) {
+				console.debug("Chunk conditioning complete");
+				break;
+			}
+			await chunkWriter.write(result.value);
 		}
-	
-		buffer = result.value.buffer;
-		offset += result.value.byteLength;
-		bytesReceived += result.value.byteLength;
-		console.debug(`Read ${bytesReceived} bytes`);
+		chunkWriter.close();
+	})();
 
-		const url = await bot.uploadToDiscord(
-			// Buffer.from(buffer, 0, offset),
-			Buffer.from(buffer),
-			`${filename}.part${partNumber++}`
-		);
-		DB.addPart(fileEntry.id, url);
+	// Upload the size-conditioned chunks to Discord.
+	const uploadingChunks = (async () => {
+		let partNumber = 0;
+		const uploadPromises = [];
+		while (true) {
+			const result = await chunkReader.read();
+			if (result.done) {
+				console.debug("Chunk uploads complete");
+				break;
+			}
+			bytesRead += result.value.byteLength;
+			partNumber++;
+			uploadPromises.push(
+				bot.uploadToDiscord(
+					Buffer.from(result.value),
+					`${filename}.part${partNumber}`
+				)
+			);
+		}
+		chunkReader.releaseLock();
+		const urls = await Promise.all(uploadPromises);
+		DB.setPartURLs(fileEntry.id, urls);
+	})();
+
+	await Promise.all([makingChunks, uploadingChunks]);
+	originalReader.releaseLock();
+	return bytesRead;
+}
+
+
 function reportUploadResult(fileID: bigint, filename: string, bytesRead: number) {
 	const pendingUpload = DB.pendingUploads.get(fileID);
 	if (!pendingUpload) {
@@ -55,7 +119,7 @@ function reportUploadResult(fileID: bigint, filename: string, bytesRead: number)
 		filesize: bytesRead,
 	});
 }
- 
+
 
 export const PUT = (async ({ request }) => {
 	const token = request.headers.get("authorization");
@@ -79,10 +143,7 @@ export const PUT = (async ({ request }) => {
 	DB.setMetadata(fileEntry.id, filename, contentType);
 
 	// Upload the file to Discord in parts.
-	const buffer = new ArrayBuffer(Config.partSize);
-	const reader = request.body.getReader({mode: "byob"});
-	const bytesRead = await readStream(reader, buffer, filename, fileEntry);
-
+	const bytesRead = await splitAndUpload(request.body, filename, fileEntry);
 	DB.disableUpload(fileEntry.id);
 
 	reportUploadResult(fileEntry.id, filename, bytesRead);
