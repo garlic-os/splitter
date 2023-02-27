@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { PageServerData } from "./$types";
+	import type { PageServerData } from "./$types";
 	import type { FileChangeEventDetail } from "$lib/components/DropArea.svelte";
 
 	import DropArea from "$lib/components/DropArea.svelte";
@@ -17,15 +17,30 @@
 		statusText.innerText = `📤 Uploading...`;
 		const file = event.detail.file;
 		try {
-			// TODO: Replace with XMLHttpRequest to get progress
-			const response = await fetch("/file", {
-				method: "PUT",
-				headers: {
-					"Authorization": data.token,
-					"X-Filename": file.name,
-				},
-				body: file,
+			// XMLHttpRequest must be used here because fetch doesn't support
+			// tracking upload progress
+			const response = await new Promise<Response>((resolve, reject) => {
+				const xhr = new XMLHttpRequest();
+				xhr.open("PUT", "/file");
+				xhr.setRequestHeader("Authorization", data.token);
+				xhr.setRequestHeader("X-Filename", file.name);
+				xhr.upload.onprogress = (event) => {
+					if (event.lengthComputable) {
+						percent = Math.round((event.loaded / event.total) * 100);
+					}
+				};
+				xhr.onload = () => {
+					resolve(new Response(xhr.response, {
+						status: xhr.status,
+						statusText: xhr.statusText
+					}));
+				};
+				xhr.onerror = () => {
+					reject(new Error(xhr.statusText));
+				};
+				xhr.send(file);
 			});
+
 			switch (response.status) {
 				case StatusCodes.CREATED:
 					state = "done";
@@ -61,7 +76,6 @@
 	{#if state === "start"}
 		<DropArea on:fileChange={upload} />
 	{:else if state === "uploading"}
-		<!-- TODO: Set percent from upload progress -->
 		<ProgressBar {percent}/>
 	{/if}
 </div>
