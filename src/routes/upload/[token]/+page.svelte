@@ -57,13 +57,13 @@
 <h1>Splitter</h1>
 <h2>Upload</h2>
 <div class="upload">
+	<p bind:this={statusText}></p>
 	{#if state === "start"}
 		<DropArea on:fileChange={upload} />
 	{:else if state === "uploading"}
 		<!-- TODO: Set percent from upload progress -->
 		<ProgressBar {percent}/>
 	{/if}
-	<p bind:this={statusText}></p>
 </div>
 
 
@@ -73,9 +73,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		border: 1px solid #fff;
-		border-radius: 2rem;
 		width: 80ch;
-		height: 20rem;
+		height: clamp(20ch, 80ch, 72vh);
 	}
 </style>
