@@ -1,10 +1,12 @@
 <script lang="ts">
 	import type { PageServerData } from "./$types";
 	import { onMount } from "svelte";
+	import ProgressBar from "$lib/components/ProgressBar.svelte";
 
 	export let data: PageServerData;
 	let state: "downloading" | "done" = "downloading";
 	let downloadURL = "";
+	let percent = 0;  // [0, 100]
 
 	let statusText: HTMLParagraphElement;
 	let downloadButton: HTMLAnchorElement;
@@ -50,7 +52,7 @@
 <h2>{data.filename}</h2>
 <div class="upload">
 	{#if state === "downloading"}
-		<!-- ProgressBar /-->
+		<ProgressBar {percent} />
 	{:else if state === "done"}
 		<a bind:this={downloadButton} href={downloadURL} download={data.filename}>
 			If your download doesn't start within a few seconds, click here
