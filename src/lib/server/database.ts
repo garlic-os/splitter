@@ -15,9 +15,9 @@ export interface PendingUpload {
 
 export interface FileEntry {
 	id: bigint;
-	author_id: bigint;
-	upload_token: string;
-	upload_expiry: number;
+	authorID: bigint;
+	uploadToken: string;
+	uploadExpiry: number;
 	name: string | null;
 }
 
@@ -78,17 +78,17 @@ export function getFileName(id: bigint): string {
 
 
 getFileByToken.stmt = con.prepare(`
-	SELECT id, upload_expiry FROM files WHERE upload_token = ?
+	SELECT id, uploadExpiry FROM files WHERE uploadToken = ?
 `);
 export function getFileByToken(
 	token: string | null
-): Pick<FileEntry, "id" | "upload_expiry"> | null {
+): Pick<FileEntry, "id" | "uploadExpiry"> | null {
 	return getFileByToken.stmt.get(token);
 }
 
 
 disableUpload.stmt = con.prepare(`
-	UPDATE files SET upload_expiry = 0 WHERE id = ?
+	UPDATE files SET uploadExpiry = 0 WHERE id = ?
 `);
 export function disableUpload(id: bigint): RunResult {
 	return disableUpload.stmt.run(id);
@@ -97,7 +97,7 @@ export function disableUpload(id: bigint): RunResult {
 
 addFile.stmt = con.prepare(`
 	INSERT INTO files
-	(id, author_id, upload_token, upload_expiry)
+	(id, authorID, uploadToken, uploadExpiry)
 	VALUES (?, ?, ?, ?)
 `);
 function addFile(

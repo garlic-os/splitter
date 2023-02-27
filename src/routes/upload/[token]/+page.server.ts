@@ -8,7 +8,7 @@ export const load = (({ params }) => {
 	// Check if a file entry exists for this token, and that the file's
 	// upload period has not expired.
 	const fileEntry = DB.getFileByToken(params.token);
-	if (!fileEntry || fileEntry.upload_expiry < Date.now()) {
+	if (!fileEntry || fileEntry.uploadExpiry < Date.now()) {
 		throw error(StatusCodes.UNAUTHORIZED, "Invalid upload token");
 	}
 	return {
