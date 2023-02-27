@@ -73,9 +73,8 @@
 		position: relative;
 		border: 2px solid #7d8084;
 		border-radius: 50px;
-		width: 90%;
-		max-width: 100%;
-		height: 65%;
+		width: 100%;
+		height: 100%;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
@@ -105,13 +104,15 @@
 	}
 
 	.icon {
-		--side-length: clamp(2rem, 12vw, 6rem);
+		--side-length: clamp(2rem, 12vw, 5rem);
 		display: inline-block;
 		width: var(--side-length);
 		height: var(--side-length);
 		background-position: center center;
 		background-repeat: no-repeat;
-		margin-bottom: 1rem;
+		background-size: cover;
+		margin-bottom: 2rem;
+		filter: invert();
 	}
 
 	.icon.upload {
