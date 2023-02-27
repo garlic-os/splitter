@@ -35,7 +35,25 @@ async function readStream(
 			`${filename}.part${partNumber++}`
 		);
 		DB.addPart(fileEntry.id, url);
+function reportUploadResult(fileID: bigint, filename: string, bytesRead: number) {
+	const pendingUpload = DB.pendingUploads.get(fileID);
+	if (!pendingUpload) {
+		console.warn("No pending upload found for file", fileID);
+		// TODO: Delete the file entry
+		throw error(StatusCodes.BAD_REQUEST);
 	}
+
+	// Verify that the file was not empty.
+	if (bytesRead === 0) {
+		pendingUpload.reject(new Error("File is empty"));
+		throw error(StatusCodes.BAD_REQUEST, "File is empty");
+	}
+
+	// Tell the bot that the upload is complete.
+	pendingUpload.resolve({
+		filename: filename,
+		filesize: bytesRead,
+	});
 }
  
 
@@ -65,25 +83,9 @@ export const PUT = (async ({ request }) => {
 	const reader = request.body.getReader({mode: "byob"});
 	const bytesRead = await readStream(reader, buffer, filename, fileEntry);
 
-	const pendingUpload = DB.pendingUploads.get(fileEntry.id);
-	if (!pendingUpload) {
-		console.warn("No pending upload found for file", fileEntry.id);
-		// TODO: Delete the file entry
-		throw error(StatusCodes.BAD_REQUEST);
-	}
-
 	DB.disableUpload(fileEntry.id);
 
-	if (bytesRead === 0) {
-		pendingUpload.reject(new Error("File is empty"));
-		throw error(StatusCodes.BAD_REQUEST, "File is empty");
-	}
-
-	// Tell the bot that the upload is complete.
-	pendingUpload.resolve({
-		filename: filename,
-		filesize: bytesRead,
-	});
+	reportUploadResult(fileEntry.id, filename, bytesRead);
 
 	// Send the client this file's download link.
 	return new Response(`/file/${fileEntry.id}/${filename}`, {
