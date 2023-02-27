@@ -42,6 +42,7 @@ con.exec(`
 		file_id        INTEGER NOT NULL REFERENCES files(id),
 		url            TEXT    NOT NULL UNIQUE
 	);
+		contentType   TEXT    DEFAULT "application/octet-stream",
 `);
 
 
@@ -54,9 +55,16 @@ process.on("exit", () => {
 export const pendingUploads = new Map<bigint, PendingUpload>();
 
 
-setFileName.stmt = con.prepare("UPDATE files SET name = ? WHERE id = ?");
-export function setFileName(id: bigint, name: string): RunResult {
-	return setFileName.stmt.run(name, id);
+// Update the file's name and content type
+setMetadata.stmt = con.prepare(
+	"UPDATE files SET name = ?, contentType = ? WHERE id = ?"
+);
+export function setMetadata(
+	id: bigint,
+	name: string,
+	contentType: string
+): RunResult {
+	return setMetadata.stmt.run(name, contentType, id);
 }
 
 
@@ -71,9 +79,13 @@ export function getPartURLs(fileID: bigint): string[] | null {
 }
 
 
-getFileName.stmt = con.prepare("SELECT name FROM files WHERE id = ?").pluck();
-export function getFileName(id: bigint): string {
-	return getFileName.stmt.get(id);
+getMetadata.stmt = con.prepare(
+	"SELECT name FROM files WHERE id = ?"
+);
+export function getMetadata(
+	id: bigint
+): Pick<FileEntry, "name" | "contentType"> | null {
+	return getMetadata.stmt.get(id);
 }
 
 
