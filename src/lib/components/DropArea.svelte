@@ -60,7 +60,7 @@
 	 on:dragover={handleDragover}
 	 on:drop={handleDrop}
 >
-	<div class="file icon" />
+	<div class="upload icon" />
 	<label>Choose or drag and drop a file
 		<input type="file" bind:this={input} on:change={handleChange} />
 	</label>
@@ -114,7 +114,7 @@
 		margin-bottom: 1rem;
 	}
 
-	.icon.file {
-		background-image: url("/file-icon.svg");
+	.icon.upload {
+		background-image: url("/upload-icon.svg");
 	}
 </style>
