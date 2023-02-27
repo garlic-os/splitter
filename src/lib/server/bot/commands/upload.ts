@@ -37,9 +37,11 @@ export const execute = async (interaction: Discord.ChatInputCommandInteraction):
 
 	// Add a promise to an object that other modules can access.
 	// The webserver will resolve it when the upload is complete.
-	const uploadComplete: Promise<DB.UploadReport> = new Promise( (resolve, reject) => {
-		DB.pendingUploads.set(fileID, { resolve, reject });
-	});
+	const uploadComplete: Promise<DB.UploadReport> = new Promise(
+		(resolve, reject) => {
+			DB.pendingUploads.set(fileID, { resolve, reject });
+		}
+	);
 	DB.reserveUpload(fileID, BigInt(interaction.user.id), token);
 	const { filename, filesize } = await uploadComplete;
 
