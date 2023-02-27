@@ -19,11 +19,8 @@ export interface FileEntry {
 	uploadToken: string;
 	uploadExpiry: number;
 	name: string | null;
-}
-
-export interface PartEntry {
-	file_id: bigint;
-	url: string;
+	contentType: string;
+	urls: string | null;
 }
 
 
@@ -32,17 +29,14 @@ con.pragma("journal_mode = WAL");
 con.defaultSafeIntegers(true);  // Enable BigInt support
 con.exec(`
 	CREATE TABLE IF NOT EXISTS files (
-		id             INTEGER PRIMARY KEY NOT NULL UNIQUE,
-		author_id      INTEGER NOT NULL,
-		upload_token   TEXT    NOT NULL,
-		upload_expiry  INTEGER NOT NULL,
-		name           TEXT    DEFAULT NULL
-	);
-	CREATE TABLE IF NOT EXISTS parts (
-		file_id        INTEGER NOT NULL REFERENCES files(id),
-		url            TEXT    NOT NULL UNIQUE
-	);
+		id            INTEGER PRIMARY KEY NOT NULL UNIQUE,
+		authorID      INTEGER NOT NULL,
+		uploadToken   TEXT    NOT NULL,
+		uploadExpiry  INTEGER NOT NULL,
+		name          TEXT    DEFAULT NULL,
 		contentType   TEXT    DEFAULT "application/octet-stream",
+		urls          TEXT    DEFAULT NULL
+	)
 `);
 
 
@@ -68,14 +62,19 @@ export function setMetadata(
 }
 
 
-addPart.stmt = con.prepare("INSERT INTO parts (file_id, url) VALUES (?, ?)");
-export function addPart(fileID: bigint, url: string): RunResult {
-	return addPart.stmt.run(fileID, url);
+getPartURLs.stmt = con.prepare(
+	"SELECT urls FROM files WHERE id = ?"
+).pluck();
+export function getPartURLs(fileID: bigint): string[] | null {
+	return getPartURLs.stmt.get(fileID);
 }
 
-getPartURLs.stmt = con.prepare("SELECT url FROM parts WHERE file_id = ?").pluck();
-export function getPartURLs(fileID: bigint): string[] | null {
-	return getPartURLs.stmt.all(fileID);
+
+setPartURLs.stmt = con.prepare(
+	"UPDATE files SET urls = ? WHERE id = ?"
+);
+export function setPartURLs(fileID: bigint, urls: string[]): RunResult {
+	return setPartURLs.stmt.run(urls.join("\n"), fileID);
 }
 
 
