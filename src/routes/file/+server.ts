@@ -4,41 +4,7 @@ import StatusCodes from "http-status-codes";
 import * as Config from "$lib/server/config";
 import * as DB from "$lib/server/database";
 import * as bot from "$lib/server/bot";
-
-
-/**
- * Splits or merge the incoming stream into chunks of the given size.
- */
-class SetSizeChunkStream extends TransformStream<Uint8Array, Uint8Array> {
-	private buffer: Uint8Array;
-	private offset: number;
-
-	constructor(size: number) {
-		super({
-			transform: (chunk, controller) => {
-				// Copy the chunk into the buffer.
-				this.buffer.set(chunk, this.offset);
-				this.offset += chunk.byteLength;
-
-				// If the buffer is full, send it to the next stream.
-				if (this.offset === size) {
-					controller.enqueue(this.buffer);
-					this.buffer = new Uint8Array(size);
-					this.offset = 0;
-				}
-			},
-			flush: (controller) => {
-				// Send the remaining data to the next stream.
-				if (this.offset > 0) {
-					controller.enqueue(this.buffer.subarray(0, this.offset));
-				}
-			},
-		});
-
-		this.buffer = new Uint8Array(size);
-		this.offset = 0;
-	}
-}
+import SetSizeChunkStream from "$lib/server/set-size-chunk-stream";
 
 
 // Merge the stream into Config.partSize chunks and upload each to Discord.
