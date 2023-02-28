@@ -7,19 +7,27 @@
 	import StatusCodes from "http-status-codes";
 
 	export let data: PageServerData;
-	let statusText: HTMLParagraphElement;
+	let statusText: string;
 
 	let state: "start" | "uploading" | "done" = "start";
 	let percent = 0;  // [0-100]
 
+
+	function handleInvalidResponse(response: unknown): void {
+		state = "start";
+		console.error({response});
+		statusText = "❌ Unexpected response from the server. Check the console for more info.";
+	}
+
+
 	async function upload(event: CustomEvent<FileChangeEventDetail>): Promise<void> {
 		state = "uploading";
-		statusText.innerText = `📤 Uploading...`;
+		statusText = `📤 Uploading...`;
 		const file = event.detail.file;
 		try {
 			// XMLHttpRequest must be used here because fetch doesn't support
 			// tracking upload progress
-			const response = await new Promise<Response>((resolve, reject) => {
+			const response = await new Promise<unknown>((resolve, reject) => {
 				const xhr = new XMLHttpRequest();
 				xhr.open("PUT", "/file");
 				xhr.setRequestHeader("Authorization", data.token);
@@ -30,10 +38,7 @@
 					}
 				};
 				xhr.onload = () => {
-					resolve(new Response(xhr.response, {
-						status: xhr.status,
-						statusText: xhr.statusText
-					}));
+					resolve(xhr.response);
 				};
 				xhr.onerror = () => {
 					reject(new Error(xhr.statusText));
@@ -41,24 +46,26 @@
 				xhr.send(file);
 			});
 
-			switch (response.status) {
-				case StatusCodes.CREATED:
-					state = "done";
-					statusText.innerText = `✅ Upload complete!\nDownload here: ${await response.text()}`;
-					break;
-				case StatusCodes.UNAUTHORIZED:
-					state = "start";
-					statusText.innerText = "❌ Token has expired or is invalid.";
-					break;
-				default:
-					state = "start";
-					console.error({response});
-					statusText.innerText = "❌ Unexpected response from the server. Check the console for more info.";
+			if (response instanceof Object && "status" in response) {
+				switch (response.status) {
+					case StatusCodes.CREATED:
+						state = "done";
+						statusText = "✅ Upload complete! The download link has been posted in the chat.";
+						break;
+					case StatusCodes.UNAUTHORIZED:
+						state = "start";
+						statusText = "❌ Token has expired or is invalid.";
+						break;
+					default:
+						handleInvalidResponse(response);
+				}
+			} else {
+				handleInvalidResponse(response);
 			}
 		} catch (error) {
 			state = "start";
 			console.error(error);
-			statusText.innerText = "❌ Failed to upload the file. Check the console for more info.";
+			statusText = "❌ Failed to upload the file. Check the console for more info.";
 		}
 	}
 </script>
@@ -72,7 +79,7 @@
 <h1>Splitter</h1>
 <h2>Upload</h2>
 <div class="upload">
-	<p bind:this={statusText}></p>
+	<p>{statusText}</p>
 	{#if state === "start"}
 		<DropArea on:fileChange={upload} />
 	{:else if state === "uploading"}
