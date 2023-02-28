@@ -18,26 +18,19 @@ async function splitAndUpload(
 	console.debug("Reading stream...");
 	const originalReader = stream.getReader();
 	const chunkStream = new SetSizeChunkStream(Config.partSize);
-	const chunkWriter = chunkStream.writable.getWriter();
-	const chunkReader = chunkStream.readable.getReader();
 	let bytesRead = 0;
 
-	// Pipe each chunk to the SetSizeChunkStream.
-	const makingChunks = (async () => {
-		while (true) {
-			const result = await originalReader.read();
-			if (result.done) {
-				console.debug("Chunk conditioning complete");
-				break;
-			}
-			await chunkWriter.write(result.value);
-		}
-		chunkWriter.close();
-	})();
+	// Pipe the stream into the SetSizeChunkStream to size-condition its chunks.
+	const makingChunks = stream.pipeThrough(chunkStream, {
+		preventClose: true,
+	});
 
-	// Upload the size-conditioned chunks to Discord.
+	console.debug(typeof makingChunks);
+
+	// Get the size-conditioned chunks and upload them to Discord.
 	const uploadingChunks = (async () => {
 		let partNumber = 0;
+		const chunkReader = chunkStream.readable.getReader();
 		const uploadPromises = [];
 		while (true) {
 			const result = await chunkReader.read();
