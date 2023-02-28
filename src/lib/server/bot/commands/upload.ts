@@ -21,6 +21,24 @@ function humanFileSize(numBytes: number, numDecimalPlaces=1): string {
 }
 
 
+// Add a promise to an object that other modules can access.
+// The webserver will resolve it when the upload is complete.
+function waitUntilUploaded(
+	userID: string,
+	fileID: bigint,
+	token: string
+): Promise<DB.UploadReport> {
+	DB.reserveUpload(fileID, BigInt(userID), token);
+	const report = new Promise<DB.UploadReport>(
+		(resolve, reject) => {
+			DB.pendingUploads.set(fileID, { resolve, reject });
+		}
+	);
+	DB.pendingUploads.delete(fileID);
+	return report;
+}
+
+
 export const data = new Discord.SlashCommandBuilder()
 	.setName("upload")
 	.setDescription("Upload a file beyond the Discord file size limit.");
@@ -35,15 +53,13 @@ export const execute = async (interaction: Discord.ChatInputCommandInteraction):
 	const fileID = BigInt(interaction.id);
 	console.log("New upload request:", fileID);
 
-	// Add a promise to an object that other modules can access.
-	// The webserver will resolve it when the upload is complete.
-	const uploadComplete: Promise<DB.UploadReport> = new Promise(
-		(resolve, reject) => {
-			DB.pendingUploads.set(fileID, { resolve, reject });
-		}
+	// TODO: It's probably possible to do this without holding a promise
+	// in memory
+	const { filename, filesize } = await waitUntilUploaded(
+		interaction.user.id,
+		fileID,
+		token
 	);
-	DB.reserveUpload(fileID, BigInt(interaction.user.id), token);
-	const { filename, filesize } = await uploadComplete;
 
 	let mention: string;
 	let channel: Discord.User | Discord.TextBasedChannel;
@@ -63,5 +79,4 @@ export const execute = async (interaction: Discord.ChatInputCommandInteraction):
 			users: []
 		},
 	});
-	DB.pendingUploads.delete(fileID);
 };
