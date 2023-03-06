@@ -23,7 +23,7 @@ function humanFileSize(numBytes: number, numDecimalPlaces=1): string {
 
 // Add a promise to an object that other modules can access.
 // The webserver will resolve it when the upload is complete.
-function waitUntilUploaded(
+async function waitUntilUploaded(
 	userID: string,
 	fileID: string,
 	token: string
@@ -45,10 +45,15 @@ export const data = new Discord.SlashCommandBuilder()
 
 
 export const execute = async (interaction: Discord.ChatInputCommandInteraction): Promise<void> => {
+	// Skip duplicate requests. Sometimes the bot receives several requests in a
+	// row for the same interaction 🤷‍♂️
+	if (DB.pendingUploads.has(interaction.id)) return;
+
 	const token = DB.generateToken();
-	interaction.reply(
-		`Go to http://localhost:${Config.webappPort}/upload/${token} to upload your file.`
-	);
+	interaction.reply({
+		content: `Go to http://localhost:${Config.webappPort}/upload/${token} to upload your file.`,
+		ephemeral: true,
+	});
 
 	console.log("New upload request:", interaction.id);
 
@@ -78,4 +83,5 @@ export const execute = async (interaction: Discord.ChatInputCommandInteraction):
 			users: []
 		},
 	});
+	interaction.deleteReply();
 };
