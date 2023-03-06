@@ -62,7 +62,7 @@ function reportUploadResult(fileID: string, filename: string, bytesRead: number)
 	const pendingUpload = DB.pendingUploads.get(fileID);
 	if (!pendingUpload) {
 		console.warn("No pending upload found for file", fileID);
-		// TODO: Delete the file entry
+		DB.removeFile(fileID);
 		throw error(StatusCodes.BAD_REQUEST);
 	}
 
