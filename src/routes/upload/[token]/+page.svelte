@@ -6,9 +6,9 @@
 	import StatusCodes from "http-status-codes";
 
 	export let data: PageServerData;
-	let statusText: string;
 
 	let state: "start" | "uploading" | "done" = "start";
+	let statusText = "";
 	let percent = 0;  // [0-100]
 
 
