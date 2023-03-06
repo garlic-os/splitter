@@ -1,8 +1,7 @@
 <script lang="ts">
 	import type { PageServerData } from "./$types";
-	import type { FileChangeEventDetail } from "$lib/components/DropArea.svelte";
-
-	import DropArea from "$lib/components/DropArea.svelte";
+	import type { FileChangeEventDetail } from "$lib/components/UploadArea.svelte";
+	import UploadArea from "$lib/components/UploadArea.svelte";
 	import ProgressBar from "$lib/components/ProgressBar.svelte";
 	import StatusCodes from "http-status-codes";
 
@@ -81,7 +80,7 @@
 <div class="upload">
 	<p>{statusText}</p>
 	{#if state === "start"}
-		<DropArea on:fileChange={upload} />
+		<UploadArea on:fileChange={upload} />
 	{:else if state === "uploading"}
 		<ProgressBar {percent}/>
 	{/if}

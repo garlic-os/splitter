@@ -24,25 +24,32 @@
 	let dragover = 0;
 
 	function handleDrop(event: DragEvent): void {
-		// If this event is not prevented on the drop area <div>, the inner
-		// <input> element will miss it
+		console.debug("handleDrop");
+		// If this event is not prevented on the drop area <div>, the browser
+		// will open the file in a new tab.
 		event.preventDefault();
 		dragover = 0;
+		const file = event.dataTransfer?.files?.item(0);
+		if (!file) return;
+		dispatch("fileChange", { file });
 	}
 
 	function handleDragover(event: DragEvent): void {
+		console.debug("handleDragover");
 		// Drop event doesn't fire if dragover isn't canceled 🤷‍♂️
 		// https://stackoverflow.com/a/21341021
 		event.preventDefault();
 	}
 
 	function handleKeypress(event: KeyboardEvent): void {
+		console.debug("handleKeypress");
 		if (event.key === "Enter" || event.key === " ") {
 			input.click();
 		}
 	}
 
 	function handleChange(): void {
+		console.debug("handleChange");
 		const file = input?.files?.item(0);
 		if (!file) return;
 		dispatch("fileChange", { file });
