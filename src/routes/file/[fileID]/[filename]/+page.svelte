@@ -75,7 +75,7 @@
 
 <h1>Splitter</h1>
 <h2>{data.filename}</h2>
-<div class="upload">
+<div class="download">
 	{#if state === "downloading"}
 		<ProgressBar {percent} />
 	{:else if state === "done"}
@@ -103,3 +103,22 @@
 	{/if}
 	<p>{statusText}</p>
 </div>
+
+
+
+<style>
+	.download {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		width: 80vw;
+		height: 70vh;
+	}
+	.download > * {
+		margin: 1rem;
+	}
+	video {
+		max-width: 100%;
+		max-height: 100%;
+	}
+</style>
