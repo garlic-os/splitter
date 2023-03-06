@@ -1,6 +1,6 @@
 import type { RunResult } from "better-sqlite3";
 import Database from "better-sqlite3";
-import * as Config from "$lib/server/config";
+import * as Config from "../../../config";
 
 
 export interface UploadReport {

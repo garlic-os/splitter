@@ -1,5 +1,5 @@
 import Discord from "discord.js";
-import * as Config from "$lib/server/config";
+import * as Config from "../../../../../config";
 import * as DB from "$lib/server/database";
 
 

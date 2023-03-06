@@ -1,5 +1,5 @@
 import corsProxy from "cors-anywhere";
-import * as Config from "$lib/server/config";
+import * as Config from "../../../config";
 
 export const server = corsProxy.createServer({
 	originWhitelist: [
