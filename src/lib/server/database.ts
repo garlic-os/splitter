@@ -14,29 +14,28 @@ export interface PendingUpload {
 }
 
 export interface FileEntry {
-	id: bigint;
-	authorID: bigint;
+	id: string;
+	ownerID: string;
 	uploadToken: string;
 	uploadExpiry: number;
 	name: string | null;
 	contentType: string;
-	urls: string | null;
+	urls: string;
 }
 
 
 const con = new Database(Config.databasePath);
 con.pragma("journal_mode = WAL");
-con.defaultSafeIntegers(true);  // Enable BigInt support
 con.exec(`
 	CREATE TABLE IF NOT EXISTS files (
-		id            INTEGER PRIMARY KEY NOT NULL UNIQUE,
-		authorID      INTEGER NOT NULL,
-		uploadToken   TEXT    NOT NULL,
-		uploadExpiry  INTEGER NOT NULL,
-		name          TEXT    DEFAULT NULL,
-		contentType   TEXT    DEFAULT "application/octet-stream",
-		urls          TEXT    DEFAULT NULL
-	)
+		id           TEXT    PRIMARY KEY NOT NULL UNIQUE,
+		ownerID      INTEGER NOT NULL,
+		uploadToken  TEXT    NOT NULL,
+		uploadExpiry INTEGER NOT NULL,
+		name         TEXT    DEFAULT NULL,
+		contentType  TEXT    DEFAULT "application/octet-stream",
+		urls         TEXT    DEFAULT ""
+	
 `);
 
 
@@ -45,8 +44,7 @@ process.on("exit", () => {
 });
 
 
-// Would use a plain object but BigInt keys aren't supported
-export const pendingUploads = new Map<bigint, PendingUpload>();
+export const pendingUploads = new Map<string, PendingUpload>();
 
 
 // Update the file's name and content type
@@ -54,39 +52,63 @@ setMetadata.stmt = con.prepare(
 	"UPDATE files SET name = ?, contentType = ? WHERE id = ?"
 );
 export function setMetadata(
-	id: bigint,
+	id: string,
 	name: string,
 	contentType: string
 ): RunResult {
 	return setMetadata.stmt.run(name, contentType, id);
 }
 
-
-getPartURLs.stmt = con.prepare(
-	"SELECT urls FROM files WHERE id = ?"
-).pluck();
-export function getPartURLs(fileID: bigint): string[] | null {
-	return getPartURLs.stmt.get(fileID);
-}
-
-
-setPartURLs.stmt = con.prepare(
-	"UPDATE files SET urls = ? WHERE id = ?"
-);
-export function setPartURLs(fileID: bigint, urls: string[]): RunResult {
-	return setPartURLs.stmt.run(urls.join("\n"), fileID);
-}
-
-
 getMetadata.stmt = con.prepare(
-	"SELECT name FROM files WHERE id = ?"
+	"SELECT name, contentType, ownerID FROM files WHERE id = ?"
 );
 export function getMetadata(
-	id: bigint
-): Pick<FileEntry, "name" | "contentType"> | null {
+	id: string
+): Pick<FileEntry, "name" | "contentType" | "ownerID"> | null {
 	return getMetadata.stmt.get(id);
 }
 
+
+getURLs.stmt = con.prepare(
+	"SELECT urls FROM files WHERE id = ?"
+).pluck();
+export function getURLs(fileID: string): string[] {
+	return getURLs.stmt.get(fileID).split("\n");
+}
+
+setURLs.stmt = con.prepare(
+	"UPDATE files SET urls = ? WHERE id = ?"
+);
+export function setURLs(fileID: string, urls: string[]): RunResult {
+	return setURLs.stmt.run(urls.join("\n"), fileID);
+}
+
+
+disableUploading.stmt = con.prepare(`
+	UPDATE files SET uploadExpiry = 0 WHERE id = ?
+`);
+export function disableUploading(id: string): RunResult {
+	return disableUploading.stmt.run(id);
+}
+
+
+addFile.stmt = con.prepare(`
+	INSERT INTO files
+	(id, ownerID, uploadToken, uploadExpiry)
+	VALUES (?, ?, ?, ?)
+`);
+function addFile(
+	fileID: string, ownerID: string, token: string, expiry: number
+): RunResult {
+	return addFile.stmt.run(fileID, ownerID, token, expiry);
+}
+
+removeFile.stmt = con.prepare(`
+	DELETE FROM files WHERE id = ?
+`);
+export function removeFile(id: string): RunResult {
+	return removeFile.stmt.run(id);
+}
 
 getFileByToken.stmt = con.prepare(`
 	SELECT id, uploadExpiry FROM files WHERE uploadToken = ?
@@ -97,24 +119,20 @@ export function getFileByToken(
 	return getFileByToken.stmt.get(token);
 }
 
-
-disableUpload.stmt = con.prepare(`
-	UPDATE files SET uploadExpiry = 0 WHERE id = ?
-`);
-export function disableUpload(id: bigint): RunResult {
-	return disableUpload.stmt.run(id);
+// For searching with autocomplete
+interface FilenameAndID {
+	id: FileEntry["id"];
+	name: NonNullable<FileEntry["name"]>;
 }
-
-
-addFile.stmt = con.prepare(`
-	INSERT INTO files
-	(id, authorID, uploadToken, uploadExpiry)
-	VALUES (?, ?, ?, ?)
+getFilenamesAndIDByAuthorID.stmt = con.prepare(`
+	SELECT id, name FROM files WHERE ownerID = ? LIKE ?%
 `);
-function addFile(
-	fileID: bigint, authorID: bigint, token: string, expiry: number
-): RunResult {
-	return addFile.stmt.run(fileID, authorID, token, expiry);
+export function getFilenamesAndIDByAuthorID(
+	ownerID: string,
+	startsWith: string = ""
+): FilenameAndID[] {
+	return getFilenamesAndIDByAuthorID.stmt.all(ownerID, startsWith)
+		.filter(({name}) => name !== null);
 }
 
 
@@ -129,8 +147,8 @@ export function generateToken(): string {
 
 
 export function reserveUpload(
-	fileID: bigint, authorID: bigint, token: string
+	fileID: string, ownerID: string, token: string
 ): RunResult {
 	const expiry = Date.now() + Config.uploadTokenLifespan;
-	return addFile(fileID, authorID, token, expiry);
+	return addFile(fileID, ownerID, token, expiry);
 }

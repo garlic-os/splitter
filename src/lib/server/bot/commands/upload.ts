@@ -25,11 +25,11 @@ function humanFileSize(numBytes: number, numDecimalPlaces=1): string {
 // The webserver will resolve it when the upload is complete.
 function waitUntilUploaded(
 	userID: string,
-	fileID: bigint,
+	fileID: string,
 	token: string
 ): Promise<DB.UploadReport> {
-	DB.reserveUpload(fileID, BigInt(userID), token);
-	const report = new Promise<DB.UploadReport>(
+	DB.reserveUpload(fileID, userID, token);
+	const report = await new Promise<DB.UploadReport>(
 		(resolve, reject) => {
 			DB.pendingUploads.set(fileID, { resolve, reject });
 		}
@@ -50,14 +50,13 @@ export const execute = async (interaction: Discord.ChatInputCommandInteraction):
 		`Go to http://localhost:${Config.webappPort}/upload/${token} to upload your file.`
 	);
 
-	const fileID = BigInt(interaction.id);
-	console.log("New upload request:", fileID);
+	console.log("New upload request:", interaction.id);
 
 	// TODO: It's probably possible to do this without holding a promise
 	// in memory
 	const { filename, filesize } = await waitUntilUploaded(
 		interaction.user.id,
-		fileID,
+		interaction.id,
 		token
 	);
 

@@ -22,16 +22,14 @@ function getGeneralContentType(
 
 
 export const load = (({ params }) => {
-	const fileID = BigInt(params.fileID);
-
 	// Bypass CORS lmao
-	const urls = DB.getPartURLs(fileID)
-		?.map(url => `${Config.corsProxyURL}/${url}`);
-	if (!urls || urls?.length === 0) {
+	const urls = DB.getURLs(params.fileID)
+		.map(url => `${Config.corsProxyURL}/${url}`);
+	if (urls.length === 0) {
 		throw error(StatusCodes.NOT_FOUND, "Not found");
 	}
 
-	const metadata = DB.getMetadata(fileID);
+	const metadata = DB.getMetadata(params.fileID);
 	if (!metadata || params.filename !== metadata.name) {
 		throw error(StatusCodes.NOT_FOUND, "Not found");
 	}

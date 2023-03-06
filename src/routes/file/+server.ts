@@ -58,7 +58,7 @@ async function splitAndUpload(
 }
 
 
-function reportUploadResult(fileID: bigint, filename: string, bytesRead: number) {
+function reportUploadResult(fileID: string, filename: string, bytesRead: number) {
 	const pendingUpload = DB.pendingUploads.get(fileID);
 	if (!pendingUpload) {
 		console.warn("No pending upload found for file", fileID);
@@ -103,8 +103,7 @@ export const PUT = (async ({ request }) => {
 
 	// Upload the file to Discord in parts.
 	const bytesRead = await splitAndUpload(request.body, filename, fileEntry);
-	DB.disableUpload(fileEntry.id);
-
+	DB.disableUploading(fileEntry.id);
 	reportUploadResult(fileEntry.id, filename, bytesRead);
 
 	// Send the client this file's download link.
