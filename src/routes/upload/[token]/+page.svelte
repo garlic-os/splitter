@@ -12,10 +12,49 @@
 	let percent = 0;  // [0-100]
 
 
-	function handleInvalidResponse(response: unknown): void {
-		state = "start";
-		console.error({response});
-		statusText = "❌ Unexpected response from the server. Check the console for more info.";
+	function sendFile(file: File): Promise<XMLHttpRequest> {
+		// XMLHttpRequest must be used because fetch doesn't support
+		// tracking upload progress
+		return new Promise<XMLHttpRequest>((resolve, reject) => {
+			const xhr = new XMLHttpRequest();
+			xhr.open("PUT", "/file");
+			xhr.setRequestHeader("Authorization", data.token);
+			xhr.setRequestHeader("X-Filename", file.name);
+			xhr.upload.onprogress = (event) => {
+				if (event.lengthComputable) {
+					percent = Math.round((event.loaded / event.total) * 100);
+				}
+			};
+			xhr.onload = () => {
+				resolve(xhr);
+			};
+			xhr.onerror = () => {
+				reject(new Error(xhr.statusText));
+			};
+			xhr.send(file);
+		});
+	}
+
+
+	function handleResponse(response: XMLHttpRequest) {
+		function handleInvalidResponse(response: XMLHttpRequest): void {
+			state = "start";
+			console.error({response});
+			statusText = "❌ Unexpected response from the server. Check the console for more info.";
+		}
+		switch (response.status) {
+			case StatusCodes.CREATED:
+				state = "done";
+				statusText = "✅ Upload complete! The download link has been posted in the chat.";
+				break;
+			case StatusCodes.UNAUTHORIZED:
+				state = "start";
+				statusText = "❌ Token has expired or is invalid.";
+				break;
+			default:
+				handleInvalidResponse(response);
+		}
+
 	}
 
 
@@ -24,43 +63,8 @@
 		statusText = `📤 Uploading...`;
 		const file = event.detail.file;
 		try {
-			// XMLHttpRequest must be used here because fetch doesn't support
-			// tracking upload progress
-			const response = await new Promise<unknown>((resolve, reject) => {
-				const xhr = new XMLHttpRequest();
-				xhr.open("PUT", "/file");
-				xhr.setRequestHeader("Authorization", data.token);
-				xhr.setRequestHeader("X-Filename", file.name);
-				xhr.upload.onprogress = (event) => {
-					if (event.lengthComputable) {
-						percent = Math.round((event.loaded / event.total) * 100);
-					}
-				};
-				xhr.onload = () => {
-					resolve(xhr.response);
-				};
-				xhr.onerror = () => {
-					reject(new Error(xhr.statusText));
-				};
-				xhr.send(file);
-			});
-
-			if (response instanceof Object && "status" in response) {
-				switch (response.status) {
-					case StatusCodes.CREATED:
-						state = "done";
-						statusText = "✅ Upload complete! The download link has been posted in the chat.";
-						break;
-					case StatusCodes.UNAUTHORIZED:
-						state = "start";
-						statusText = "❌ Token has expired or is invalid.";
-						break;
-					default:
-						handleInvalidResponse(response);
-				}
-			} else {
-				handleInvalidResponse(response);
-			}
+			const response = await sendFile(file);
+			handleResponse(response);
 		} catch (error) {
 			state = "start";
 			console.error(error);
