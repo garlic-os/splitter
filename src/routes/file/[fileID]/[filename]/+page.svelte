@@ -5,10 +5,10 @@
 
 	export let data: PageServerData;
 	let state: "downloading" | "done" = "downloading";
+	let statusText = "";
 	let downloadURL = "";
 	let percent = 0;  // [0, 100]
 
-	let statusText: HTMLParagraphElement;
 	let downloadButton: HTMLAnchorElement;
 
 
@@ -19,22 +19,21 @@
 	 * onto the page as its respective HTML element.
 	 * If the file is text, it will be put into the page in a <pre> element.
 	 * Otherwise, it will be downloaded.
-	 * @param fileBlob
 	 */
 	async function presentFile(fileBlob: Blob) {
-		statusText.innerText = "🔃 Processing...";
+		statusText = "🔃 Processing...";
 		if (data.type === "text") {
 			downloadURL = await fileBlob.text();
 		} else {
 			downloadURL = URL.createObjectURL(fileBlob);
 		}
 		if (data.type === "other") {
-			statusText.innerText = "✅ Enjoy!";
+			statusText = "✅ Enjoy!";
 			setTimeout( () => {  // TODO: Start the download without a hard-coded delay
 				downloadButton.click();
 			}, 1000);
 		} else {
-			statusText.innerText = "";
+			statusText = "";
 		}
 		state = "done";
 	}
@@ -44,7 +43,7 @@
 		data.urls.sort();
 		const blobPromises = [];
 		for (const [i, url] of data.urls.entries()) {
-			statusText.innerText = `📥 Downloading part ${i + 1} of ${data.urls.length}...`;
+			statusText = `📥 Downloading part ${i + 1} of ${data.urls.length}...`;
 			const blobPromise = fetch(url, {
 				headers: {
 					"X-Requested-With": "XMLHttpRequest",
@@ -54,11 +53,11 @@
 			blobPromises.push(blobPromise);
 		}
 
-		statusText.innerText = `🔃 Processing parts...`;
+		statusText = `🔃 Processing parts...`;
 		const blobs = await Promise.all(blobPromises);
 
 		// Merge the blobs.
-		statusText.innerText = "🔃 Merging parts...";
+		statusText = "🔃 Merging parts...";
 		const mergedBlob = new Blob(blobs, {
 			type: data.contentType,
 		});
@@ -102,5 +101,5 @@
 			</a>
 		{/if}
 	{/if}
-	<p bind:this={statusText}></p>
+	<p>{statusText}</p>
 </div>
