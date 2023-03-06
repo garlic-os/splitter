@@ -4,12 +4,12 @@
 	import ProgressBar from "$lib/components/ProgressBar.svelte";
 
 	export let data: PageServerData;
+	let downloadButton: HTMLAnchorElement;
+
 	let state: "downloading" | "done" = "downloading";
 	let statusText = "";
 	let downloadURL = "";
 	let percent = 0;  // [0, 100]
-
-	let downloadButton: HTMLAnchorElement;
 
 
 	/**
