@@ -8,7 +8,10 @@
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"lint": "eslint ."
+		"lint": "eslint .",
+		"register-commands": "run-script-os",
+		"register-commands:default": "REGISTER_COMMANDS=1 npm run dev -- --open",
+		"register-commands:win32": "set REGISTER_COMMANDS=1 && npm run dev -- --open"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^2.0.0",
@@ -18,6 +21,7 @@
 		"@typescript-eslint/parser": "^5.45.0",
 		"eslint": "^8.28.0",
 		"eslint-plugin-svelte3": "^4.0.0",
+		"run-script-os": "^1.1.6",
 		"svelte": "^3.54.0",
 		"svelte-check": "^3.0.1",
 		"tslib": "^2.4.1",

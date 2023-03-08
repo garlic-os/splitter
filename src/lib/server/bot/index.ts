@@ -1,17 +1,14 @@
+import type { SlashCommandHandler, AutocompleteCommandHandler } from "./types";
 import Discord from "discord.js";
 import * as Config from "../../../../config";
 import * as uploadCommand from "./commands/upload";
 
 
 
-interface DiscordSlashCommandHandler {
-	data: Discord.SlashCommandBuilder;
-	execute(interaction: Discord.CommandInteraction): Promise<void>;
-}
 
 
 class SplitterBot extends Discord.Client {
-	commands: Discord.Collection<string, DiscordSlashCommandHandler>;
+	commands: Discord.Collection<string, SlashCommandHandler>;
 	uploadChannel: Discord.TextChannel | null;
 	ready: Promise<void>;
 
