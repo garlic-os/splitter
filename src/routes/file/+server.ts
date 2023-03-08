@@ -16,18 +16,12 @@ async function splitAndUpload(
 	fileEntry: Pick<DB.FileEntry, "id" | "uploadExpiry">,
 ): Promise<number> {
 	console.debug("Reading stream...");
-	const originalReader = stream.getReader();
+	// Pipe the stream into a SetSizeChunkStream to size-condition its chunks.
 	const chunkStream = new SetSizeChunkStream(Config.partSize);
-	let bytesRead = 0;
-
-	// Pipe the stream into the SetSizeChunkStream to size-condition its chunks.
-	const makingChunks = stream.pipeThrough(chunkStream, {
-		preventClose: true,
-	});
-
-	console.debug(typeof makingChunks);
+	const makingChunks = stream.pipeTo(chunkStream.writable);
 
 	// Get the size-conditioned chunks and upload them to Discord.
+	let bytesRead = 0;
 	const uploadingChunks = (async () => {
 		let partNumber = 0;
 		const chunkReader = chunkStream.readable.getReader();
@@ -46,14 +40,17 @@ async function splitAndUpload(
 					`${filename}.part${partNumber}`
 				)
 			);
+			console.log(`Part ${partNumber}: ${result.value.byteLength} bytes`);
 		}
 		chunkReader.releaseLock();
 		const urls = await Promise.all(uploadPromises);
-		DB.setPartURLs(fileEntry.id, urls);
+		if (urls.length === 0) return;
+		DB.setURLs(fileEntry.id, urls);
 	})();
 
+	// Run the two above tasks in parallel.
+	// (Or as parallel as you can get in node.js but you know)
 	await Promise.all([makingChunks, uploadingChunks]);
-	originalReader.releaseLock();
 	return bytesRead;
 }
 
@@ -62,7 +59,7 @@ function reportUploadResult(fileID: string, filename: string, bytesRead: number)
 	const pendingUpload = DB.pendingUploads.get(fileID);
 	if (!pendingUpload) {
 		console.warn("No pending upload found for file", fileID);
-		DB.removeFile(fileID);
+		DB.deleteFile(fileID);
 		throw error(StatusCodes.BAD_REQUEST);
 	}
 
