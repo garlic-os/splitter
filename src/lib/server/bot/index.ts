@@ -1,10 +1,6 @@
 import type { SlashCommandHandler, AutocompleteCommandHandler } from "./types";
 import Discord from "discord.js";
 import * as Config from "../../../../config";
-import * as uploadCommand from "./commands/upload";
-
-
-
 
 
 class SplitterBot extends Discord.Client {
@@ -20,7 +16,10 @@ class SplitterBot extends Discord.Client {
 			this.once(Discord.Events.ClientReady, () => resolve());
 		});
 
-		this.commands.set(uploadCommand.data.name, uploadCommand);
+		const commands = import.meta.glob("./commands/*", { eager: true }) as Record<string, SlashCommandHandler>;
+		for (const command of Object.values(commands)) {
+			this.commands.set(command.data.name, command);
+		}
 	}
 }
 
