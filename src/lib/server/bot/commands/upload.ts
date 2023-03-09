@@ -64,24 +64,17 @@ export const execute = async (interaction: Discord.ChatInputCommandInteraction):
 		token
 	);
 
-	let mention: string;
-	let channel: Discord.User | Discord.TextBasedChannel;
-	if (interaction.channel) {
-		mention = `<@${interaction.user.id}>`;
-		channel = interaction.channel;
-	} else {
-		mention = "You";
-		channel = interaction.user;
-	}
-
-	channel.send({
+	const mention = interaction.guild ? `<@${interaction.user.id}>` : "You";
+	const notificationMessage = await interaction.followUp({
 		content: `${mention} posted a file: ` +
 				 `${Config.webappURL}/file/${interaction.id}/${filename}\n` +
 				 `${humanFileSize(filesize, 2)}`,
 		allowedMentions: {
 			users: []
 		},
+		ephemeral: false
 	});
+	DB.setUploadNotificationID(interaction.id, notificationMessage.id);
 	console.info(`[UPLOAD ${interaction.id}] Sent confirmation`);
 	interaction.deleteReply();
 };
