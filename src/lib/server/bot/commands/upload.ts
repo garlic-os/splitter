@@ -51,7 +51,7 @@ export const execute = async (interaction: Discord.ChatInputCommandInteraction):
 
 	const token = DB.generateToken();
 	interaction.reply({
-		content: `Go to http://localhost:${Config.webappPort}/upload/${token} to upload your file.`,
+		content: `Go to ${Config.webappURL}/upload/${token} to upload your file.`,
 		ephemeral: true,
 	});
 
@@ -77,8 +77,8 @@ export const execute = async (interaction: Discord.ChatInputCommandInteraction):
 
 	channel.send({
 		content: `${mention} posted a file: ` +
-				`http://localhost:${Config.webappPort}/file/${interaction.id}/${filename}\n` +
-				`${humanFileSize(filesize, 2)}`,
+				 `${Config.webappURL}/file/${interaction.id}/${filename}\n` +
+				 `${humanFileSize(filesize, 2)}`,
 		allowedMentions: {
 			users: []
 		},
