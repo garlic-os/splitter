@@ -25,8 +25,6 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 		});
 		return;
 	}
-	console.debug(metadata.ownerID);
-	console.debug(interaction.user.id);
 	if (metadata.ownerID !== interaction.user.id) {
 		await interaction.reply({
 			ephemeral: true,
@@ -43,6 +41,8 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 		});
 		return;
 	}
+
+	console.log(`New delete request: ${fileID}`);
 
 	// Delete the file entry from the database and delete the messages on
 	// Discord that contained the file's parts.
