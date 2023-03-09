@@ -15,7 +15,7 @@ export const data = new Discord.SlashCommandBuilder()
 
 // Usage: /delete <filename>
 // Uses Discord's chat command autocomplete feature to suggest filenames.
-export const execute = async (interaction: Discord.ChatInputCommandInteraction): Promise<void> => {
+export async function execute(interaction: Discord.ChatInputCommandInteraction): Promise<void> {
 	const fileID = interaction.options.getString("filename", true);
 	const metadata = DB.getMetadata(fileID);
 	if (!metadata) {
