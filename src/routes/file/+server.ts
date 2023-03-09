@@ -15,7 +15,6 @@ async function splitAndUpload(
 	filename: string,
 	fileEntry: Pick<DB.FileEntry, "id" | "uploadExpiry">,
 ): Promise<number> {
-	console.debug("Reading stream...");
 	// Pipe the stream into a SetSizeChunkStream to size-condition its chunks.
 	const chunkStream = new SetSizeChunkStream(Config.partSize);
 	const makingChunks = stream.pipeTo(chunkStream.writable);
@@ -29,7 +28,7 @@ async function splitAndUpload(
 		while (true) {
 			const result = await chunkReader.read();
 			if (result.done) {
-				console.debug("Chunk uploads complete");
+				console.info(`[UPLOAD ${fileEntry.id}] Chunk uploads complete`);
 				break;
 			}
 			bytesRead += result.value.byteLength;
@@ -40,7 +39,7 @@ async function splitAndUpload(
 					`${filename}.part${partNumber}`
 				)
 			);
-			console.log(`Part ${partNumber}: ${result.value.byteLength} bytes`);
+			console.info(`[UPLOAD ${fileEntry.id}] Part ${partNumber}: ${result.value.byteLength} bytes`);
 		}
 		chunkReader.releaseLock();
 		const urls = await Promise.all(uploadPromises);
@@ -58,7 +57,7 @@ async function splitAndUpload(
 function reportUploadResult(fileID: string, filename: string, bytesRead: number) {
 	const pendingUpload = DB.pendingUploads.get(fileID);
 	if (!pendingUpload) {
-		console.warn("No pending upload found for file", fileID);
+		console.error(`[${fileID}] No pending upload found`);
 		DB.deleteFile(fileID);
 		throw error(StatusCodes.BAD_REQUEST);
 	}
@@ -87,13 +86,13 @@ export const PUT = (async ({ request }) => {
 		throw error(StatusCodes.UNAUTHORIZED, "Invalid upload token");
 	}
 	if (!filename) {
-		throw error(StatusCodes.BAD_REQUEST, 'No filename provided - "X-Filename" header is missing');
+		throw error(StatusCodes.BAD_REQUEST, `No filename provided - "X-Filename" header is missing`);
 	}
 	if (!request.body) {
 		throw error(StatusCodes.BAD_REQUEST, "No file provided");
 	}
 
-	console.log("Receiving file ID:", fileEntry.id);
+	console.info(`[UPLOAD ${fileEntry.id}] Receiving file`);
 
 	// Enter the file metadata we'll need into the database.
 	DB.setMetadata(fileEntry.id, filename, contentType);

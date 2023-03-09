@@ -53,7 +53,7 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 		return;
 	}
 
-	console.log(`New delete request: ${fileID}`);
+	console.log(`[DELETE ${fileID}] New request`);
 
 	// Delete the file entry from the database and delete the messages on
 	// Discord that contained the file's parts.
@@ -64,14 +64,14 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 	for (const url of urls) {
 		const messageID = url.split("/").at(-2);
 		if (!messageID) {
-			console.error(new Error(`Corrupt file part URL: ${url}`));
+			console.error(new Error(`[DELETE ${fileID}] Corrupt file part URL: ${url}`));
 			encounteredError = true;
 			continue;
 		}
 		const uploadChannel = await bot.getUploadChannel();
 		const message = await uploadChannel.messages.fetch(messageID);
 		if (!message) {
-			console.error(new Error(`Message ${messageID} not found`));
+			console.error(new Error(`[DELETE ${fileID}] Message ${messageID} not found`));
 			encounteredError = true;
 			continue;
 		}
@@ -80,12 +80,12 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 
 	const uploadNotificationID = DB.getUploadNotificationID(fileID);
 	if (!uploadNotificationID) {
-		console.error(new Error(`Upload notification message ID not found for file ${fileID}`));
+		console.error(new Error(`[DELETE ${fileID}] Upload notification message ID not found for file ${fileID}`));
 		encounteredError = true;
 	} else {
 		const uploadNotificationMessage = await interaction.channel?.messages.fetch(uploadNotificationID);
 		if (!uploadNotificationMessage) {
-			console.error(new Error(`Upload notification message ${uploadNotificationID} not found`));
+			console.error(new Error(`[DELETE ${fileID}] Upload notification message ${uploadNotificationID} not found`));
 			encounteredError = true;
 		} else {
 			removalsInProgress.push(uploadNotificationMessage.delete());
@@ -94,6 +94,7 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 
 	DB.deleteFile(fileID);
 	await Promise.all(removalsInProgress);
+	console.info(`[DELETE ${fileID}] Complete`);
 
 	if (encounteredError) {
 		await interaction.reply({
@@ -125,6 +126,7 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 				])
 		]
 	});
+	console.info(`[DELETE ${fileID}] Confirmation sent`);
 };
 
 

@@ -55,10 +55,9 @@ export const execute = async (interaction: Discord.ChatInputCommandInteraction):
 		ephemeral: true,
 	});
 
-	console.log("New upload request:", interaction.id);
-
-	// TODO: It's probably possible to do this without holding a promise
-	// in memory
+	// TODO: It's probably possible (and desirable) to do this without holding a
+	// promise in memory
+	console.info(`[UPLOAD ${interaction.id}] New request`);
 	const { filename, filesize } = await waitUntilUploaded(
 		interaction.user.id,
 		interaction.id,
@@ -83,5 +82,6 @@ export const execute = async (interaction: Discord.ChatInputCommandInteraction):
 			users: []
 		},
 	});
+	console.info(`[UPLOAD ${interaction.id}] Sent confirmation`);
 	interaction.deleteReply();
 };
