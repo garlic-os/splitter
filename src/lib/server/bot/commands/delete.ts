@@ -1,5 +1,13 @@
+import type { ISplitter } from "../types";
 import Discord from "discord.js";
 import * as DB from "$lib/server/database";
+
+
+function assertIsSplitter(bot: Discord.Client): asserts bot is ISplitter {
+	if (!("isSplitter" in bot)) {
+		throw new Error("Client is not a Splitter bot. Splitter's extra features are required for this command.");
+	}
+}
 
 
 export const data = new Discord.SlashCommandBuilder()
@@ -16,6 +24,9 @@ export const data = new Discord.SlashCommandBuilder()
 // Usage: /delete <filename>
 // Uses Discord's chat command autocomplete feature to suggest filenames.
 export async function execute(interaction: Discord.ChatInputCommandInteraction): Promise<void> {
+	const bot = interaction.client;
+	assertIsSplitter(bot);
+
 	const fileID = interaction.options.getString("filename", true);
 	const metadata = DB.getMetadata(fileID);
 	if (!metadata) {
@@ -57,7 +68,8 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 			encounteredError = true;
 			continue;
 		}
-		const message = await interaction.channel?.messages.fetch(messageID);
+		const uploadChannel = await bot.getUploadChannel();
+		const message = await uploadChannel.messages.fetch(messageID);
 		if (!message) {
 			console.error(new Error(`Message ${messageID} not found`));
 			encounteredError = true;

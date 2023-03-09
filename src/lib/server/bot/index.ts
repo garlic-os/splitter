@@ -1,102 +1,93 @@
 import type { SlashCommandHandler, AutocompleteCommandHandler } from "./types";
+import { ISplitter } from "./types";
 import Discord from "discord.js";
 import * as Config from "../../../../config";
 
 
-class SplitterBot extends Discord.Client {
-	commands: Discord.Collection<string, SlashCommandHandler>;
-	uploadChannel: Discord.TextChannel | null;
-	ready: Promise<void>;
-
+class Splitter extends ISplitter {
 	constructor(options: Discord.ClientOptions) {
 		super(options);
-		this.commands = new Discord.Collection();
-		this.uploadChannel = null;
-		this.ready = new Promise((resolve) => {
-			this.once(Discord.Events.ClientReady, () => resolve());
-		});
-
 		const commands = import.meta.glob("./commands/*", { eager: true }) as Record<string, SlashCommandHandler>;
 		for (const command of Object.values(commands)) {
 			this.commands.set(command.data.name, command);
 		}
+
+		this.on(Discord.Events.ClientReady, this.onClientReady);
+		this.on(Discord.Events.InteractionCreate, this.onInteractionCreate);
+	}
+
+	async onClientReady(): Promise<void> {
+		const channel = await this.channels.fetch(Config.discordUploadChannelID);
+		if (channel instanceof Discord.TextChannel) {
+			this.uploadChannel = channel;
+		} else {
+			throw new Error("Invalid Discord channel ID");
+		}
+	}
+
+	async onInteractionCreate(interaction: Discord.Interaction): Promise<void> {
+		if (interaction.isChatInputCommand()) {
+			const command = this.commands.get(interaction.commandName);
+	
+			if (!command) {
+				console.error(`No command matching ${interaction.commandName} was found.`);
+				return;
+			}
+	
+			try {
+				await command.execute(interaction);
+			} catch (error) {
+				console.error(error);
+				await interaction.reply({
+					content: "There was an error while executing this command!",
+					ephemeral: true
+				});
+			}
+		} else if (interaction.isAutocomplete()) {
+			const command = this.commands.get(
+				interaction.commandName
+			) as AutocompleteCommandHandler | undefined;
+	
+			if (!command) {
+				console.error(`No command matching ${interaction.commandName} was found.`);
+				return;
+			}
+	
+			try {
+				await command.autocomplete(interaction);
+			} catch (error) {
+				console.error(error);
+			}
+		}
+	}
+
+	async getUploadChannel(): Promise<NonNullable<ISplitter["uploadChannel"]>> {
+		await this.ready;
+		return this.uploadChannel!;
 	}
 }
 
 
-const bot = new SplitterBot({
-	intents: [Discord.GatewayIntentBits.Guilds],
-});
-
+const bot = new Splitter({ intents: [] });
 
 bot.on(Discord.Events.ClientReady, async () => {
-	const channel = await bot.channels.fetch(Config.discordUploadChannelID);
-	if (channel instanceof Discord.TextChannel) {
-		bot.uploadChannel = channel;
-	} else {
-		throw new Error("Invalid Discord channel ID");
-	}
-	if (!bot.user) {
-		throw new Error("Bot user is null");
-	}
-	console.log(`Bot logged in as ${bot.user.tag}`);
+	console.log(`Bot logged in as ${bot.user!.tag}`);
 });
-
-
-bot.on(Discord.Events.InteractionCreate, async (interaction) => {
-	if (interaction.isChatInputCommand()) {
-		const command = bot.commands.get(interaction.commandName);
-
-		if (!command) {
-			console.error(`No command matching ${interaction.commandName} was found.`);
-			return;
-		}
-
-		try {
-			await command.execute(interaction);
-		} catch (error) {
-			console.error(error);
-			await interaction.reply({
-				content: "There was an error while executing this command!",
-				ephemeral: true
-			});
-		}
-	} else if (interaction.isAutocomplete()) {
-		const command = bot.commands.get(
-			interaction.commandName
-		) as AutocompleteCommandHandler | undefined;
-
-		if (!command) {
-			console.error(`No command matching ${interaction.commandName} was found.`);
-			return;
-		}
-
-		try {
-			await command.autocomplete(interaction);
-		} catch (error) {
-			console.error(error);
-		}
-	}
-});
-
 
 process.on("exit", () => {
 	bot.destroy();
 });
 
-
 await bot.login(Config.discordBotToken);
 
 
 export async function uploadToDiscord(buffer: Buffer, filename: string): Promise<string> {
-	await bot.ready;  // Ensure uploadChannel has been set.
-
 	// Upload the file to Discord.
 	const attachment = new Discord.AttachmentBuilder(buffer, {
 		name: filename,
 	});
-	const message = await (bot.uploadChannel as Discord.TextChannel)
-		.send({files: [attachment]});
+	const uploadChannel = await bot.getUploadChannel();
+	const message = await uploadChannel.send({files: [attachment]});
 
 	// Return the URL of the uploaded file.
 	const sentAttachment = message.attachments.first();
