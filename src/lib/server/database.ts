@@ -21,7 +21,7 @@ export interface FileEntry {
 	urls: string;
 	uploadToken: string;
 	uploadExpiry: number;
-	uploadNotificationMessageID: string | null;
+	uploadNotificationID: string | null;
 }
 
 
@@ -29,14 +29,14 @@ const con = new Database(Config.databasePath);
 con.pragma("journal_mode = WAL");
 con.exec(`
 	CREATE TABLE IF NOT EXISTS files (
-		id                          TEXT    PRIMARY KEY NOT NULL UNIQUE,
-		ownerID                     TEXT    NOT NULL,
-		name                        TEXT    DEFAULT NULL,
-		contentType                 TEXT    DEFAULT "application/octet-stream",
-		urls                        TEXT    DEFAULT "",
-		uploadToken                 TEXT    NOT NULL,
-		uploadExpiry                INTEGER NOT NULL,
-		uploadNotificationMessageID TEXT DEFAULT NULL
+		id                    TEXT     PRIMARY KEY NOT NULL UNIQUE,
+		ownerID               TEXT     NOT NULL,
+		name                  TEXT     DEFAULT NULL,
+		contentType           TEXT     DEFAULT "application/octet-stream",
+		urls                  TEXT     DEFAULT "",
+		uploadToken           TEXT     NOT NULL,
+		uploadExpiry          INTEGER  NOT NULL,
+		uploadNotificationID  TEXT     DEFAULT NULL
 	)
 `);
 
@@ -153,26 +153,26 @@ export function getFilenamesAndIDByAuthorID(
 	return getFilenamesAndIDByAuthorID.stmt.all(ownerID, startsWith + "%");
 }
 
-setUploadNotificationMessageID.stmt = con.prepare(`
+setUploadNotificationID.stmt = con.prepare(`
 	UPDATE files
-	SET uploadNotificationMessageID = ?
+	SET uploadNotificationID = ?
 	WHERE id = ?
 `);
-export function setUploadNotificationMessageID(
+export function setUploadNotificationID(
 	fileID: string, messageID: string
 ): RunResult {
-	return setUploadNotificationMessageID.stmt.run(messageID, fileID);
+	return setUploadNotificationID.stmt.run(messageID, fileID);
 }
 
-getUploadNotificationMessageID.stmt = con.prepare(`
-	SELECT uploadNotificationMessageID
+getUploadNotificationID.stmt = con.prepare(`
+	SELECT uploadNotificationID
 	FROM files
 	WHERE id = ?
 `).pluck();
-export function getUploadNotificationMessageID(
+export function getUploadNotificationID(
 	fileID: string
 ): string | null {
-	return getUploadNotificationMessageID.stmt.get(fileID);
+	return getUploadNotificationID.stmt.get(fileID);
 }
 
 

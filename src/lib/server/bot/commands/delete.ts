@@ -66,14 +66,14 @@ export const execute = async (interaction: Discord.ChatInputCommandInteraction):
 		removalsInProgress.push(message.delete());
 	}
 
-	const uploadNotificationMessageID = DB.getUploadNotificationMessageID(fileID);
-	if (!uploadNotificationMessageID) {
+	const uploadNotificationID = DB.getUploadNotificationID(fileID);
+	if (!uploadNotificationID) {
 		console.error(new Error(`Upload notification message ID not found for file ${fileID}`));
 		encounteredError = true;
 	} else {
-		const uploadNotificationMessage = await interaction.channel?.messages.fetch(uploadNotificationMessageID);
+		const uploadNotificationMessage = await interaction.channel?.messages.fetch(uploadNotificationID);
 		if (!uploadNotificationMessage) {
-			console.error(new Error(`Upload notification message ${uploadNotificationMessageID} not found`));
+			console.error(new Error(`Upload notification message ${uploadNotificationID} not found`));
 			encounteredError = true;
 		} else {
 			removalsInProgress.push(uploadNotificationMessage.delete());
