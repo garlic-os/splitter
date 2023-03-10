@@ -11,7 +11,6 @@ export interface AutocompleteCommandHandler extends SlashCommandHandler {
 
 
 export abstract class ISplitter extends Discord.Client {
-	public static readonly isSplitter: true = true;  // Sentinel for type checking
 	protected commands: Discord.Collection<string, SlashCommandHandler>;
 	protected uploadChannel: Discord.TextChannel | null;
 	protected ready: Promise<void>;

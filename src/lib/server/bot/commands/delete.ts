@@ -1,10 +1,10 @@
-import type { ISplitter } from "../types";
+import { ISplitter } from "../types";
 import Discord from "discord.js";
 import * as DB from "$lib/server/database";
 
 
 function assertIsSplitter(bot: Discord.Client): asserts bot is ISplitter {
-	if (!("isSplitter" in bot)) {
+	if (bot instanceof ISplitter) {
 		throw new Error("Client is not a Splitter bot. Splitter's extra features are required for this command.");
 	}
 }
