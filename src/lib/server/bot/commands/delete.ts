@@ -64,14 +64,14 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 	for (const url of urls) {
 		const messageID = url.split("/").at(-2);
 		if (!messageID) {
-			console.error(new Error(`[DELETE ${fileID}] Corrupt file part URL: ${url}`));
+			console.error(new Error(`[DELETE ${fileID}] Corrupt file part URL: "${url}"`));
 			encounteredError = true;
 			continue;
 		}
 		const uploadChannel = await bot.getUploadChannel();
 		const message = await uploadChannel.messages.fetch(messageID);
 		if (!message) {
-			console.error(new Error(`[DELETE ${fileID}] Message ${messageID} not found`));
+			console.error(new Error(`[DELETE ${fileID}] Invalid message ID "${messageID}"; from URL "${url}"`));
 			encounteredError = true;
 			continue;
 		}
