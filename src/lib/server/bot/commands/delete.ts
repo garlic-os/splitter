@@ -13,11 +13,11 @@ function assertIsSplitter(bot: Discord.Client): asserts bot is ISplitter {
 export const data = new Discord.SlashCommandBuilder()
 	.setName("delete")
 	.setDescription("Delete a file that you've uploaded.")
-	.addStringOption( (option) =>
-		option.setName("filename")
-			.setDescription("Name of the file to delete")
-			.setAutocomplete(true)
-			.setRequired(true)
+	.addStringOption( (option) => option
+		.setName("filename")
+		.setDescription("Name of the file to delete")
+		.setAutocomplete(true)
+		.setRequired(true)
 	);
 
 
