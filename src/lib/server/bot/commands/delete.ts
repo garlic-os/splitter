@@ -62,6 +62,9 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 	const removalsInProgress: Promise<any>[] = [];
 	let encounteredError = false;
 	for (const url of urls) {
+		// Extract the message ID from a Discord file URL. They look like this:
+		// https://cdn.discordapp.com/attachments/1063656661908201552/1083462159545143346/hehe_cat.png.part1
+		//                                            message id here ^^^^^^^^^^^^^^^^^^^
 		const messageID = url.split("/").at(-2);
 		if (!messageID) {
 			console.error(new Error(`[DELETE ${fileID}] Corrupt file part URL: "${url}"`));
