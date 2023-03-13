@@ -1,9 +1,10 @@
 import Discord from "discord.js";
+import * as client from "$lib/server/bot/client";
 
 
 export async function getUploadChannel(): Promise<Discord.TextChannel> {
-	await ready;
-	return uploadChannel!;
+	await client.ready;
+	return client.uploadChannel!;
 }
 
 

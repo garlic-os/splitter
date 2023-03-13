@@ -16,10 +16,11 @@ export const client = new Discord.Client({ intents: [] });
 
 // Get the upload channel as soon as the client is ready.
 // Expose a promise that resolves when the client is ready.
-let uploadChannel: Discord.TextChannel | null = null;
-const ready: Promise<void> = new Promise((resolve) => {
+export let uploadChannel: Discord.TextChannel | null = null;
+export const ready: Promise<void> = new Promise((resolve) => {
 	client.once(Discord.Events.ClientReady, () => resolve());
 });
+
 client.on(Discord.Events.ClientReady, async () => {
 	const channel = await client.channels.fetch(Config.discordUploadChannelID);
 	if (channel instanceof Discord.TextChannel) {

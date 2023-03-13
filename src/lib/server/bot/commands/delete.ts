@@ -1,5 +1,6 @@
 import Discord from "discord.js";
 import * as DB from "$lib/server/database";
+import * as Bot from "$lib/server/bot";
 
 
 export const data = new Discord.SlashCommandBuilder()
@@ -16,8 +17,6 @@ export const data = new Discord.SlashCommandBuilder()
 // Usage: /delete <filename>
 // Uses Discord's chat command autocomplete feature to suggest filenames.
 export async function execute(interaction: Discord.ChatInputCommandInteraction): Promise<void> {
-	const bot = interaction.client;
-
 	const fileID = interaction.options.getString("filename", true);
 	const metadata = DB.getMetadata(fileID);
 	if (!metadata) {
@@ -44,7 +43,7 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 		return;
 	}
 
-	console.log(`[DELETE ${fileID}] New request`);
+	console.info(`[DELETE ${fileID}] New request`);
 
 	// Delete the file entry from the database and delete the messages on
 	// Discord that contained the file's parts.
@@ -62,7 +61,7 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 			encounteredError = true;
 			continue;
 		}
-		const uploadChannel = await bot.getUploadChannel();
+		const uploadChannel = await Bot.getUploadChannel();
 		const message = await uploadChannel.messages.fetch(messageID);
 		if (!message) {
 			console.error(new Error(`[DELETE ${fileID}] Invalid message ID "${messageID}"; from URL "${url}"`));
@@ -77,7 +76,8 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 		console.error(new Error(`[DELETE ${fileID}] Upload notification message ID not found for file ${fileID}`));
 		encounteredError = true;
 	} else {
-		const uploadNotificationMessage = await interaction.channel?.messages.fetch(uploadNotificationID);
+		const uploadNotificationMessage = await interaction.channel?.messages
+			.fetch(uploadNotificationID);
 		if (!uploadNotificationMessage) {
 			console.error(new Error(`[DELETE ${fileID}] Upload notification message ${uploadNotificationID} not found`));
 			encounteredError = true;
