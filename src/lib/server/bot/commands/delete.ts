@@ -20,6 +20,11 @@ export const data = new Discord.SlashCommandBuilder()
 export async function execute(interaction: Discord.ChatInputCommandInteraction): Promise<void> {
 	const fileID = interaction.options.getString("filename", true);
 	const metadata = DB.getMetadata(fileID);
+async function validateMetadata(
+	interaction: Discord.ChatInputCommandInteraction,
+	fileID: string,
+	metadata: Partial<DB.FileEntry> | null
+): Promise<void> {
 	if (!metadata) {
 		await interaction.reply({
 			content: `File \`${fileID}\` not found.`,
