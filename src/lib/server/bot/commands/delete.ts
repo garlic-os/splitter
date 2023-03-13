@@ -1,7 +1,7 @@
 import Discord from "discord.js";
-import * as DB from "$lib/server/database";
-import * as Bot from "$lib/server/bot";
-import * as Colors from "$lib/server/bot/colors";
+import * as db from "$lib/server/database";
+import * as bot from "$lib/server/bot";
+import * as colors from "$lib/server/bot/colors";
 
 
 export const data = new Discord.SlashCommandBuilder()
@@ -34,7 +34,7 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 				new Discord.EmbedBuilder()
 					.setTitle("Couldn't delete")
 					.setDescription("You are not the owner of this file.")
-					.setColor(Colors.red)
+					.setColor(colors.red)
 					.addFields([
 						{ name: "Filename", value: `\`${metadata.name}\``, inline: true },
 						{ name: "ID", value: `\`${fileID}\``, inline: true }
@@ -49,7 +49,7 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 	// Delete the file entry from the database and delete the messages on
 	// Discord that contained the file's parts.
 	await interaction.deferReply();
-	const urls = DB.getURLs(fileID);
+	const urls = db.getURLs(fileID);
 	const removalsInProgress: Promise<any>[] = [];
 	let encounteredError = false;
 	for (const url of urls) {
@@ -62,17 +62,17 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 			encounteredError = true;
 			continue;
 		}
-		const uploadChannel = await Bot.getUploadChannel();
 		const message = await uploadChannel.messages.fetch(messageID);
 		if (!message) {
 			console.error(new Error(`[DELETE ${fileID}] Invalid message ID "${messageID}"; from URL "${url}"`));
+		const uploadChannel = await bot.getUploadChannel();
 			encounteredError = true;
 			continue;
 		}
 		removalsInProgress.push(message.delete());
 	}
 
-	const uploadNotificationID = DB.getUploadNotificationID(fileID);
+	const uploadNotificationID = db.getUploadNotificationID(fileID);
 	if (!uploadNotificationID) {
 		console.error(new Error(`[DELETE ${fileID}] Upload notification message ID not found for file ${fileID}`));
 		encounteredError = true;
@@ -87,7 +87,7 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 		}
 	}
 
-	DB.deleteFile(fileID);
+	db.deleteFile(fileID);
 	await Promise.all(removalsInProgress);
 	console.info(`[DELETE ${fileID}] Complete`);
 
@@ -98,10 +98,10 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 				new Discord.EmbedBuilder()
 					.setTitle("Couldn't delete")
 					.setDescription("An error occurred while deleting the file.")
-					.setColor(Colors.red)
+					.setColor(colors.red)
 					.addFields([
-						{ name: "Filename", value: `\`${metadata.name}\``, inline: true },
-						{ name: "ID", value: `\`${fileID}\``, inline: true }
+						{ name: "Filename", value: `\`${metadata!.name}\``, inline: true },
+						{ name: "ID", value: `\`${fileID}\``, inline: true },
 					])
 			]
 		});
@@ -114,10 +114,10 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 			new Discord.EmbedBuilder()
 				.setTitle("File deleted")
 				.setDescription("The file was deleted successfully.")
-				.setColor(Colors.green)
+				.setColor(colors.green)
 				.addFields([
-					{ name: "Filename", value: `\`${metadata.name}\``, inline: true },
-					{ name: "ID", value: `\`${fileID}\``, inline: true }
+					{ name: "Filename", value: `\`${metadata!.name}\``, inline: true },
+					{ name: "ID", value: `\`${fileID}\``, inline: true },
 				])
 		]
 	});
@@ -127,10 +127,9 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 
 // https://discordjs.guide/slash-commands/autocomplete.html#sending-results
 export async function autocomplete(interaction: Discord.AutocompleteInteraction) {
-	const focusedValue = interaction.options.getFocused();
-	const choices = DB.getFilenamesAndIDByAuthorID(
+	const choices = db.getFilenamesAndIDByAuthorID(
 		interaction.user.id,
-		focusedValue
+		interaction.options.getFocused()
 	);
 	await interaction.respond(
 		choices.map( (choice) => ({
