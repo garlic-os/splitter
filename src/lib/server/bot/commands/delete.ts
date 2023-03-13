@@ -1,13 +1,5 @@
-import { ISplitter } from "../types";
 import Discord from "discord.js";
 import * as DB from "$lib/server/database";
-
-
-function assertIsSplitter(bot: Discord.Client): asserts bot is ISplitter {
-	if (bot instanceof ISplitter) {
-		throw new Error("Client is not a Splitter bot. Splitter's extra features are required for this command.");
-	}
-}
 
 
 export const data = new Discord.SlashCommandBuilder()
@@ -25,7 +17,6 @@ export const data = new Discord.SlashCommandBuilder()
 // Uses Discord's chat command autocomplete feature to suggest filenames.
 export async function execute(interaction: Discord.ChatInputCommandInteraction): Promise<void> {
 	const bot = interaction.client;
-	assertIsSplitter(bot);
 
 	const fileID = interaction.options.getString("filename", true);
 	const metadata = DB.getMetadata(fileID);
