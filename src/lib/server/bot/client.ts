@@ -1,12 +1,11 @@
 
-import type { SlashCommandHandler, AutocompleteCommandHandler } from "./types";
 import Discord from "discord.js";
 import * as Config from "../../../../config";
 
 
 // Load commands from the commands/ directory.
-const commands: Discord.Collection<string, SlashCommandHandler> = new Discord.Collection();
-const modules = import.meta.glob("./commands/*", { eager: true }) as Record<string, SlashCommandHandler>;
+const commands: Discord.Collection<string, Bot.SlashCommandHandler> = new Discord.Collection();
+const modules = import.meta.glob("./commands/*", { eager: true }) as Record<string, Bot.SlashCommandHandler>;
 for (const command of Object.values(modules)) {
 	commands.set(command.data.name, command);
 }
@@ -54,7 +53,7 @@ client.on(Discord.Events.InteractionCreate, async (interaction: Discord.Interact
 	} else if (interaction.isAutocomplete()) {
 		const command = commands.get(
 			interaction.commandName
-		) as AutocompleteCommandHandler | undefined;
+		) as Bot.AutocompleteCommandHandler | undefined;
 
 		if (!command) {
 			console.error(`No command matching ${interaction.commandName} was found.`);

@@ -3,28 +3,6 @@ import Database from "better-sqlite3";
 import * as Config from "../../../config";
 
 
-export interface UploadReport {
-	filename: string;
-	filesize: number;
-}
-
-export interface PendingUpload {
-	resolve: (report: UploadReport) => void;
-	reject: (err: Error) => void;
-}
-
-export interface FileEntry {
-	id: string;
-	ownerID: string;
-	name: string | null;
-	contentType: string;
-	urls: string;
-	uploadToken: string;
-	uploadExpiry: number;
-	uploadNotificationID: string | null;
-}
-
-
 const con = new Database(Config.databasePath);
 con.pragma("journal_mode = WAL");
 con.exec(`
@@ -46,7 +24,7 @@ process.on("exit", () => {
 });
 
 
-export const pendingUploads = new Map<string, PendingUpload>();
+export const pendingUploads = new Map<string, DB.PendingUpload>();
 
 
 // Update the file's name and content type
@@ -70,7 +48,7 @@ getMetadata.stmt = con.prepare(`
 `);
 export function getMetadata(
 	id: string
-): Pick<FileEntry, "name" | "contentType" | "ownerID"> | null {
+): Pick<DB.FileEntry, "name" | "contentType" | "ownerID"> | null {
 	return getMetadata.stmt.get(id);
 }
 
@@ -130,14 +108,14 @@ getFileByToken.stmt = con.prepare(`
 `);
 export function getFileByToken(
 	token: string | null
-): Pick<FileEntry, "id" | "uploadExpiry"> | null {
+): Pick<DB.FileEntry, "id" | "uploadExpiry"> | null {
 	return getFileByToken.stmt.get(token);
 }
 
 // For searching with autocomplete
 interface FilenameAndID {
-	id: FileEntry["id"];
-	name: NonNullable<FileEntry["name"]>;
+	id: DB.FileEntry["id"];
+	name: NonNullable<DB.FileEntry["name"]>;
 }
 getFilenamesAndIDByAuthorID.stmt = con.prepare(`
 	SELECT id, name

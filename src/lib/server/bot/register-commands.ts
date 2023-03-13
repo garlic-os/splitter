@@ -1,4 +1,3 @@
-import type { SlashCommandHandler } from "./types";
 import * as Discord from "discord.js";
 import * as Config from "../../../../config";
 
@@ -10,7 +9,7 @@ for (const module of Object.values(modules)) {
 	commands.push(
 		// Couldn't figure out how to verify these things' types. Just going
 		// to assume they have the right properties and move on
-		(module as SlashCommandHandler).data.toJSON()
+		(module as Bot.SlashCommandHandler).data.toJSON()
 	);
 }
 
