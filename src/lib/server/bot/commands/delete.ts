@@ -4,22 +4,6 @@ import * as bot from "$lib/server/bot";
 import * as colors from "$lib/server/bot/colors";
 
 
-export const data = new Discord.SlashCommandBuilder()
-	.setName("delete")
-	.setDescription("Delete a file that you've uploaded.")
-	.addStringOption( (option) => option
-		.setName("filename")
-		.setDescription("Name of the file to delete")
-		.setAutocomplete(true)
-		.setRequired(true)
-	);
-
-
-// Usage: /delete <filename>
-// Uses Discord's chat command autocomplete feature to suggest filenames.
-export async function execute(interaction: Discord.ChatInputCommandInteraction): Promise<void> {
-	const fileID = interaction.options.getString("filename", true);
-	const metadata = DB.getMetadata(fileID);
 async function validateMetadata(
 	interaction: Discord.ChatInputCommandInteraction,
 	fileID: string,
@@ -48,12 +32,32 @@ async function validateMetadata(
 		});
 		return;
 	}
+}
+
+
+export const data = new Discord.SlashCommandBuilder()
+	.setName("delete")
+	.setDescription("Delete a file that you've uploaded.")
+	.addStringOption( (option) => option
+		.setName("filename")
+		.setDescription("Name of the file to delete")
+		.setAutocomplete(true)
+		.setRequired(true)
+	);
+
+
+// Usage: /delete <filename>
+// Uses Discord's chat command autocomplete feature to suggest filenames.
+export async function execute(interaction: Discord.ChatInputCommandInteraction): Promise<void> {
+	const fileID = interaction.options.getString("filename", true);
+	const metadata = db.getMetadata(fileID);
+	await validateMetadata(interaction, fileID, metadata);
 
 	console.info(`[DELETE ${fileID}] New request`);
 
 	// Delete the file entry from the database and delete the messages on
 	// Discord that contained the file's parts.
-	await interaction.deferReply();
+	await interaction.deferReply({ ephemeral: true });
 	const urls = db.getURLs(fileID);
 	const removalsInProgress: Promise<any>[] = [];
 	let encounteredError = false;
@@ -67,14 +71,16 @@ async function validateMetadata(
 			encounteredError = true;
 			continue;
 		}
-		const message = await uploadChannel.messages.fetch(messageID);
-		if (!message) {
-			console.error(new Error(`[DELETE ${fileID}] Invalid message ID "${messageID}"; from URL "${url}"`));
 		const uploadChannel = await bot.getUploadChannel();
+		try {
+			const message = await uploadChannel.messages.fetch(messageID);
+			removalsInProgress.push(message.delete());
+			console.debug(`[DELETE ${fileID}] Deleting message ${messageID}`);
+		} catch (err) {
+			console.error(new Error(`[DELETE ${fileID}] Invalid message ID "${messageID}" from URL "${url}"; API returned error:`), err);
 			encounteredError = true;
 			continue;
 		}
-		removalsInProgress.push(message.delete());
 	}
 
 	const uploadNotificationID = db.getUploadNotificationID(fileID);
@@ -82,13 +88,14 @@ async function validateMetadata(
 		console.error(new Error(`[DELETE ${fileID}] Upload notification message ID not found for file ${fileID}`));
 		encounteredError = true;
 	} else {
-		const uploadNotificationMessage = await interaction.channel?.messages
-			.fetch(uploadNotificationID);
-		if (!uploadNotificationMessage) {
-			console.error(new Error(`[DELETE ${fileID}] Upload notification message ${uploadNotificationID} not found`));
-			encounteredError = true;
-		} else {
+		const channel = interaction.channel ?? interaction.user.dmChannel!;
+		try {
+			const uploadNotificationMessage = await channel.messages.fetch(uploadNotificationID);
 			removalsInProgress.push(uploadNotificationMessage.delete());
+			console.debug(`[DELETE ${fileID}] Deleting notification message ${uploadNotificationID}`);
+		} catch (err) {
+			console.error(new Error(`[DELETE ${fileID}] Upload notification message ${uploadNotificationID} not found; API returned error:`), err);
+			encounteredError = true;
 		}
 	}
 
@@ -97,8 +104,7 @@ async function validateMetadata(
 	console.info(`[DELETE ${fileID}] Complete`);
 
 	if (encounteredError) {
-		await interaction.reply({
-			ephemeral: true,
+		await interaction.editReply({
 			embeds: [
 				new Discord.EmbedBuilder()
 					.setTitle("Couldn't delete")
@@ -113,8 +119,7 @@ async function validateMetadata(
 		return;
 	}
 
-	await interaction.reply({
-		ephemeral: true,
+	await interaction.editReply({
 		embeds: [
 			new Discord.EmbedBuilder()
 				.setTitle("File deleted")
