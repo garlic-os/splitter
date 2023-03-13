@@ -3,7 +3,7 @@ import { error } from "@sveltejs/kit";
 import StatusCodes from "http-status-codes";
 import * as Config from "../../../config";
 import * as DB from "$lib/server/database";
-import * as bot from "$lib/server/bot";
+import * as Bot from "$lib/server/bot";
 import SetSizeChunkStream from "$lib/server/set-size-chunk-stream";
 
 
@@ -34,7 +34,7 @@ async function splitAndUpload(
 			bytesRead += result.value.byteLength;
 			partNumber++;
 			uploadPromises.push(
-				bot.uploadToDiscord(
+				Bot.uploadToDiscord(
 					Buffer.from(result.value),
 					`${filename}.part${partNumber}`
 				)
