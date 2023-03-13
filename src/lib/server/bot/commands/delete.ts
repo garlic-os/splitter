@@ -1,6 +1,7 @@
 import Discord from "discord.js";
 import * as DB from "$lib/server/database";
 import * as Bot from "$lib/server/bot";
+import * as Colors from "$lib/server/bot/colors";
 
 
 export const data = new Discord.SlashCommandBuilder()
@@ -33,7 +34,7 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 				new Discord.EmbedBuilder()
 					.setTitle("Couldn't delete")
 					.setDescription("You are not the owner of this file.")
-					.setColor(0xB71C1C)
+					.setColor(Colors.red)
 					.addFields([
 						{ name: "Filename", value: `\`${metadata.name}\``, inline: true },
 						{ name: "ID", value: `\`${fileID}\``, inline: true }
@@ -97,7 +98,7 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 				new Discord.EmbedBuilder()
 					.setTitle("Couldn't delete")
 					.setDescription("An error occurred while deleting the file.")
-					.setColor(0xB71C1C)
+					.setColor(Colors.red)
 					.addFields([
 						{ name: "Filename", value: `\`${metadata.name}\``, inline: true },
 						{ name: "ID", value: `\`${fileID}\``, inline: true }
@@ -113,7 +114,7 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 			new Discord.EmbedBuilder()
 				.setTitle("File deleted")
 				.setDescription("The file was deleted successfully.")
-				.setColor(0x43A047)
+				.setColor(Colors.green)
 				.addFields([
 					{ name: "Filename", value: `\`${metadata.name}\``, inline: true },
 					{ name: "ID", value: `\`${fileID}\``, inline: true }
