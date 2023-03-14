@@ -10,23 +10,24 @@ for (const command of Object.values(modules)) {
 	commands.set(command.data.name, command);
 }
 
-export const client = new Discord.Client({ intents: [] });
+const client = new Discord.Client({ intents: [] });
 
 
-// Get the upload channel as soon as the client is ready.
-// Expose a promise that resolves when the client is ready.
-export let uploadChannel: Discord.TextChannel | null = null;
-export const ready: Promise<void> = new Promise((resolve) => {
-	client.once(Discord.Events.ClientReady, () => resolve());
-});
+// Lazy load the upload channel.
+let uploadChannel: Discord.TextChannel | null = null;;
+export async function getUploadChannel(): Promise<Discord.TextChannel> {
+	if (!uploadChannel) {
+		const channel = await client.channels.fetch(Config.discordUploadChannelID);
+		if (!(channel instanceof Discord.TextChannel)) {
+			throw new Error("Invalid Discord channel ID");
+		}
+		uploadChannel = channel;
+	}
+	return uploadChannel;
+}
+
 
 client.on(Discord.Events.ClientReady, async () => {
-	const channel = await client.channels.fetch(Config.discordUploadChannelID);
-	if (channel instanceof Discord.TextChannel) {
-		uploadChannel = channel;
-	} else {
-		throw new Error("Invalid Discord channel ID");
-	}
 	console.log(`Bot logged in as ${client.user!.tag}`);
 });
 
