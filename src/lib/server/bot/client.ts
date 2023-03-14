@@ -19,7 +19,7 @@ export async function getUploadChannel(): Promise<Discord.TextChannel> {
 	if (!uploadChannel) {
 		const channel = await client.channels.fetch(Config.discordUploadChannelID);
 		if (!(channel instanceof Discord.TextChannel)) {
-			throw new Error("Invalid Discord channel ID");
+			throw new Error("Invalid upload channel ID");
 		}
 		uploadChannel = channel;
 	}
