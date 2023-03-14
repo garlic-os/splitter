@@ -18,6 +18,7 @@ namespace DB {
 		ownerID: string;
 		name: string | null;
 		contentType: string;
+		channelID: string | null;
 		uploadNotifID: string | null;
 	}
 

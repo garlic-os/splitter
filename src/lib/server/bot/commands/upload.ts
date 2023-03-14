@@ -24,8 +24,8 @@ function humanFileSize(numBytes: number, numDecimalPlaces=1): string {
 // Add a promise to an object that other modules can access.
 // The webserver will resolve it when the upload is complete.
 async function waitUntilUploaded(
-	userID: string,
 	fileID: string,
+	userID: string,
 	token: string
 ): Promise<DB.UploadReport> {
 	db.openUpload(fileID, userID, token);
@@ -59,8 +59,8 @@ export const execute = async (interaction: Discord.ChatInputCommandInteraction):
 	// promise in memory
 	console.info(`[UPLOAD ${interaction.id}] New request`);
 	const { filename, filesize } = await waitUntilUploaded(
-		interaction.user.id,
 		interaction.id,
+		interaction.user.id,
 		token
 	);
 
@@ -74,7 +74,7 @@ export const execute = async (interaction: Discord.ChatInputCommandInteraction):
 		},
 		ephemeral: false
 	});
-	db.setUploadNotificationID(interaction.id, notificationMessage.id);
+	db.setUploadInfo(interaction.id, notifMessage.channelId, notifMessage.id);
 	console.info(`[UPLOAD ${interaction.id}] Sent confirmation`);
 	interaction.deleteReply();
 };

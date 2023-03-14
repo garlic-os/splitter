@@ -7,12 +7,13 @@ const con = new Database(Config.databasePath);
 con.pragma("journal_mode = WAL");
 con.exec(`
 	CREATE TABLE IF NOT EXISTS files (
-		id                    TEXT     NOT NULL PRIMARY KEY UNIQUE,
-		ownerID               TEXT     NOT NULL,
-		uploadToken           TEXT     NOT NULL,
-		uploadExpiry          INTEGER  NOT NULL,
-		name                  TEXT     DEFAULT NULL,
-		contentType           TEXT     DEFAULT "application/octet-stream",
+		id             TEXT     NOT NULL PRIMARY KEY UNIQUE,
+		ownerID        TEXT     NOT NULL,
+		uploadToken    TEXT     NOT NULL,
+		uploadExpiry   INTEGER  NOT NULL,
+		name           TEXT     DEFAULT NULL,
+		contentType    TEXT     DEFAULT "application/octet-stream",
+		channelID      TEXT     DEFAULT NULL,
 		uploadNotifID  TEXT     DEFAULT NULL
 	);
 
@@ -147,23 +148,24 @@ export function getFilenamesAndIDByAuthorID(
 
 setUploadInfo.stmt = con.prepare(`
 	UPDATE files
-	SET uploadNotificationID = ?
+	SET channelID = ?, uploadNotifID = ?
 	WHERE id = ?
 `);
-	fileID: string, messageID: string
+export function setUploadInfo(
+	fileID: string, channelID: string, messageID: string
 ): RunResult {
 	return setUploadInfo.stmt.run(channelID, messageID, fileID);
 }
 
-	SELECT uploadNotificationID
 getUploadInfo.stmt = con.prepare(`
+	SELECT channelID, uploadNotifID
 	FROM files
 	WHERE id = ?
-`).pluck();
-export function getUploadNotificationID(
+`);
+export function getUploadInfo(
 	fileID: string
-): string | null {
-	return getUploadNotificationID.stmt.get(fileID);
+): Pick<DB.FileEntry, "channelID" | "uploadNotifID"> | null {
+	return getUploadInfo.stmt.get(fileID);
 }
 
 
