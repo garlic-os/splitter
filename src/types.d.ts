@@ -18,7 +18,7 @@ namespace DB {
 		ownerID: string;
 		name: string | null;
 		contentType: string;
-		uploadNotificationID: string | null;
+		uploadNotifID: string | null;
 	}
 
 	interface PartEntry {

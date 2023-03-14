@@ -13,7 +13,7 @@ con.exec(`
 		uploadExpiry          INTEGER  NOT NULL,
 		name                  TEXT     DEFAULT NULL,
 		contentType           TEXT     DEFAULT "application/octet-stream",
-		uploadNotificationID  TEXT     DEFAULT NULL
+		uploadNotifID  TEXT     DEFAULT NULL
 	);
 
 	CREATE TABLE IF NOT EXISTS parts (
@@ -145,19 +145,18 @@ export function getFilenamesAndIDByAuthorID(
 	return getFilenamesAndIDByAuthorID.stmt.all(ownerID, startsWith + "%");
 }
 
-setUploadNotificationID.stmt = con.prepare(`
+setUploadInfo.stmt = con.prepare(`
 	UPDATE files
 	SET uploadNotificationID = ?
 	WHERE id = ?
 `);
-export function setUploadNotificationID(
 	fileID: string, messageID: string
 ): RunResult {
-	return setUploadNotificationID.stmt.run(messageID, fileID);
+	return setUploadInfo.stmt.run(channelID, messageID, fileID);
 }
 
-getUploadNotificationID.stmt = con.prepare(`
 	SELECT uploadNotificationID
+getUploadInfo.stmt = con.prepare(`
 	FROM files
 	WHERE id = ?
 `).pluck();
