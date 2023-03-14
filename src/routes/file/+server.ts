@@ -2,8 +2,8 @@ import type { RequestHandler } from "./$types";
 import { error } from "@sveltejs/kit";
 import StatusCodes from "http-status-codes";
 import * as Config from "../../../config";
-import * as DB from "$lib/server/database";
-import * as Bot from "$lib/server/bot";
+import * as db from "$lib/server/database";
+import * as bot from "$lib/server/bot";
 import SetSizeChunkStream from "$lib/server/set-size-chunk-stream";
 
 
@@ -56,10 +56,10 @@ async function splitAndUpload(
 
 
 function reportUploadResult(fileID: string, filename: string, bytesRead: number) {
-	const pendingUpload = DB.pendingUploads.get(fileID);
+	const pendingUpload = db.pendingUploads.get(fileID);
 	if (!pendingUpload) {
 		console.error(`[${fileID}] No pending upload found`);
-		DB.deleteFile(fileID);
+		db.deleteFile(fileID);
 		throw error(StatusCodes.BAD_REQUEST);
 	}
 
@@ -81,7 +81,7 @@ export const PUT = (async ({ request }) => {
 	const token = request.headers.get("authorization");
 	const filename = request.headers.get("x-filename")?.replaceAll(" ", "_");
 	const contentType = request.headers.get("content-type") ?? "application/octet-stream";
-	const fileEntry = DB.getFileByToken(token);
+	const fileEntry = db.getFileByToken(token);
 
 	if (!fileEntry || fileEntry.uploadExpiry < Date.now()) {
 		throw error(StatusCodes.UNAUTHORIZED, "Invalid upload token");
@@ -96,7 +96,7 @@ export const PUT = (async ({ request }) => {
 	console.info(`[UPLOAD ${fileEntry.id}] Receiving file`);
 
 	// Enter the file metadata we'll need into the database.
-	DB.setMetadata(fileEntry.id, filename, contentType);
+	db.setMetadata(fileEntry.id, filename, contentType);
 
 	// Upload the file to Discord in parts.
 	const bytesRead = await splitAndUpload(request.body, filename, fileEntry);

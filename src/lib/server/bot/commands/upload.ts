@@ -1,6 +1,6 @@
 import Discord from "discord.js";
 import * as Config from "../../../../../config";
-import * as DB from "$lib/server/database";
+import * as db from "$lib/server/database";
 
 
 // Format a number of bytes as human-readable text.
@@ -31,10 +31,10 @@ async function waitUntilUploaded(
 	db.openUpload(fileID, userID, token);
 	const report = await new Promise<DB.UploadReport>(
 		(resolve, reject) => {
-			DB.pendingUploads.set(fileID, { resolve, reject });
+			db.pendingUploads.set(fileID, { resolve, reject });
 		}
 	);
-	DB.pendingUploads.delete(fileID);
+	db.pendingUploads.delete(fileID);
 	return report;
 }
 
@@ -47,9 +47,9 @@ export const data = new Discord.SlashCommandBuilder()
 export const execute = async (interaction: Discord.ChatInputCommandInteraction): Promise<void> => {
 	// Skip duplicate requests. Sometimes the bot receives several requests in a
 	// row for the same interaction 🤷‍♂️
-	if (DB.pendingUploads.has(interaction.id)) return;
+	if (db.pendingUploads.has(interaction.id)) return;
 
-	const token = DB.generateToken();
+	const token = db.generateToken();
 	interaction.reply({
 		content: `Go to ${Config.webappURL}/upload/${token} to upload your file.`,
 		ephemeral: true,
@@ -74,7 +74,7 @@ export const execute = async (interaction: Discord.ChatInputCommandInteraction):
 		},
 		ephemeral: false
 	});
-	DB.setUploadNotificationID(interaction.id, notificationMessage.id);
+	db.setUploadNotificationID(interaction.id, notificationMessage.id);
 	console.info(`[UPLOAD ${interaction.id}] Sent confirmation`);
 	interaction.deleteReply();
 };
