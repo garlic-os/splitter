@@ -7,15 +7,20 @@ const con = new Database(Config.databasePath);
 con.pragma("journal_mode = WAL");
 con.exec(`
 	CREATE TABLE IF NOT EXISTS files (
-		id                    TEXT     PRIMARY KEY NOT NULL UNIQUE,
+		id                    TEXT     NOT NULL PRIMARY KEY UNIQUE,
 		ownerID               TEXT     NOT NULL,
-		name                  TEXT     DEFAULT NULL,
-		contentType           TEXT     DEFAULT "application/octet-stream",
-		urls                  TEXT     DEFAULT "",
 		uploadToken           TEXT     NOT NULL,
 		uploadExpiry          INTEGER  NOT NULL,
+		name                  TEXT     DEFAULT NULL,
+		contentType           TEXT     DEFAULT "application/octet-stream",
 		uploadNotificationID  TEXT     DEFAULT NULL
-	)
+	);
+
+	CREATE TABLE IF NOT EXISTS parts (
+		fileID     TEXT  NOT NULL PRIMARY KEY REFERENCES files(id) ON DELETE CASCADE,
+		messageID  TEXT  NOT NULL,
+		url        TEXT  NOT NULL
+	);
 `);
 
 
@@ -54,21 +59,30 @@ export function getMetadata(
 
 
 getURLs.stmt = con.prepare(`
-	SELECT urls
-	FROM files
-	WHERE id = ?
+	SELECT url
+	FROM parts
+	WHERE fileID = ?
 `).pluck();
 export function getURLs(fileID: string): string[] {
-	return getURLs.stmt.get(fileID).split("\n");
+	return getURLs.stmt.all(fileID);
 }
 
-setURLs.stmt = con.prepare(`
-	UPDATE files
-	SET urls = ?
-	WHERE id = ?
+addPart.stmt = con.prepare(`
+	INSERT INTO parts
+	(fileID, messageID, url)
+	VALUES (?, ?, ?)
 `);
-export function setURLs(fileID: string, urls: string[]): RunResult {
-	return setURLs.stmt.run(urls.join("\n"), fileID);
+export function addPart(fileID: string, messageID: string, url: string): RunResult {
+	return addPart.stmt.run(fileID, messageID, url);
+}
+
+getParts.stmt = con.prepare(`
+	SELECT messageID, url
+	FROM parts
+	WHERE fileID = ?
+`);
+export function getParts(fileID: string): Omit<DB.PartEntry, "fileID">[] {
+	return getParts.stmt.all(fileID);
 }
 
 

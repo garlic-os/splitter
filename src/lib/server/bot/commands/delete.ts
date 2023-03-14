@@ -55,55 +55,48 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 
 	console.info(`[DELETE ${fileID}] New request`);
 
-	// Delete the file entry from the database and delete the messages on
-	// Discord that contained the file's parts.
-	await interaction.deferReply({ ephemeral: true });
-	const urls = db.getURLs(fileID);
 	const removalsInProgress: Promise<any>[] = [];
 	let encounteredError = false;
-	for (const url of urls) {
-		// Extract the message ID from a Discord file URL. They look like this:
-		// https://cdn.discordapp.com/attachments/1063656661908201552/1083462159545143346/hehe_cat.png.part1
-		//                                            message id here ^^^^^^^^^^^^^^^^^^^
-		const messageID = url.split("/").at(-2);
-		if (!messageID) {
-			console.error(new Error(`[DELETE ${fileID}] Corrupt file part URL: "${url}"`));
-			encounteredError = true;
-			continue;
-		}
-		const uploadChannel = await bot.getUploadChannel();
-		try {
-			const message = await uploadChannel.messages.fetch(messageID);
-			removalsInProgress.push(message.delete());
-			console.debug(`[DELETE ${fileID}] Deleting message ${messageID}`);
-		} catch (err) {
-			console.error(new Error(`[DELETE ${fileID}] Invalid message ID "${messageID}" from URL "${url}"; API returned error:`), err);
-			encounteredError = true;
-			continue;
-		}
-	}
 
 	const uploadNotificationID = db.getUploadNotificationID(fileID);
 	if (!uploadNotificationID) {
-		console.error(new Error(`[DELETE ${fileID}] Upload notification message ID not found for file ${fileID}`));
+		console.error(`[DELETE ${fileID}] Upload notification message ID not found for file ${fileID}`);
 		encounteredError = true;
 	} else {
+		debugger;
 		const channel = interaction.channel ?? interaction.user.dmChannel!;
 		try {
 			const uploadNotificationMessage = await channel.messages.fetch(uploadNotificationID);
 			removalsInProgress.push(uploadNotificationMessage.delete());
 			console.debug(`[DELETE ${fileID}] Deleting notification message ${uploadNotificationID}`);
 		} catch (err) {
-			console.error(new Error(`[DELETE ${fileID}] Upload notification message ${uploadNotificationID} not found; API returned error:`), err);
+			console.error(`[DELETE ${fileID}] Upload notification message ${uploadNotificationID} not found; API returned error:`, err);
 			encounteredError = true;
+		}
+	}
+
+	// Delete the file entry from the database and delete the messages on
+	// Discord that contained the file's parts.
+	await interaction.deferReply({ ephemeral: true });
+	const parts = db.getParts(fileID);
+	for (const { url, messageID } of parts) {
+		const uploadChannel = await bot.getUploadChannel();
+		try {
+			const message = await uploadChannel.messages.fetch(messageID);
+			removalsInProgress.push(message.delete());
+			console.debug(`[DELETE ${fileID}] Deleting message ${messageID}`);
+		} catch (err) {
+			console.error(`[DELETE ${fileID}] Invalid message ID "${messageID}" from URL "${url}"; API returned error:`, err);
+			encounteredError = true;
+			continue;
 		}
 	}
 
 	db.deleteFile(fileID);
 	await Promise.all(removalsInProgress);
-	console.info(`[DELETE ${fileID}] Complete`);
 
 	if (encounteredError) {
+		console.warn(`[DELETE ${fileID} Complete with errors]`);
 		await interaction.editReply({
 			embeds: [
 				new Discord.EmbedBuilder()
@@ -119,6 +112,7 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 		return;
 	}
 
+	console.info(`[DELETE ${fileID}] Complete`);
 	await interaction.editReply({
 		embeds: [
 			new Discord.EmbedBuilder()

@@ -34,17 +34,18 @@ async function splitAndUpload(
 			bytesRead += result.value.byteLength;
 			partNumber++;
 			uploadPromises.push(
-				Bot.uploadToDiscord(
-					Buffer.from(result.value),
-					`${filename}.part${partNumber}`
-				)
+				(async () => {
+					const { messageID, url } = await bot.uploadToDiscord(
+						Buffer.from(result.value),
+						`${filename}.part${partNumber}`
+					);
+					db.addPart(fileEntry.id, messageID, url);
+				})()
 			);
 			console.info(`[UPLOAD ${fileEntry.id}] Part ${partNumber}: ${result.value.byteLength} bytes`);
 		}
 		chunkReader.releaseLock();
-		const urls = await Promise.all(uploadPromises);
-		if (urls.length === 0) return;
-		DB.setURLs(fileEntry.id, urls);
+		await Promise.all(uploadPromises);
 	})();
 
 	// Run the two above tasks in parallel.

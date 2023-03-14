@@ -11,6 +11,22 @@ namespace Bot {
 
 
 namespace DB {
+	interface FileEntry {
+		id: string;
+		uploadToken: string;
+		uploadExpiry: number;
+		ownerID: string;
+		name: string | null;
+		contentType: string;
+		uploadNotificationID: string | null;
+	}
+
+	interface PartEntry {
+		fileID: string;
+		messageID: string;
+		url: string;
+	}
+
 	interface UploadReport {
 		filename: string;
 		filesize: number;
@@ -19,16 +35,5 @@ namespace DB {
 	interface PendingUpload {
 		resolve: (report: UploadReport) => void;
 		reject: (err: Error) => void;
-	}
-
-	interface FileEntry {
-		id: string;
-		ownerID: string;
-		name: string | null;
-		contentType: string;
-		urls: string;
-		uploadToken: string;
-		uploadExpiry: number;
-		uploadNotificationID: string | null;
 	}
 }
