@@ -99,7 +99,7 @@ export const PUT = (async ({ request }) => {
 
 	// Upload the file to Discord in parts.
 	const bytesRead = await splitAndUpload(request.body, filename, fileEntry);
-	DB.disableUploading(fileEntry.id);
+	db.closeUpload(fileEntry.id);
 	reportUploadResult(fileEntry.id, filename, bytesRead);
 
 	// Send the client this file's download link.

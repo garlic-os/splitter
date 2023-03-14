@@ -72,13 +72,13 @@ export function setURLs(fileID: string, urls: string[]): RunResult {
 }
 
 
-disableUploading.stmt = con.prepare(`
+closeUpload.stmt = con.prepare(`
 	UPDATE files
 	SET uploadExpiry = 0
 	WHERE id = ?
 `);
-export function disableUploading(id: string): RunResult {
-	return disableUploading.stmt.run(id);
+export function closeUpload(id: string): RunResult {
+	return closeUpload.stmt.run(id);
 }
 
 
@@ -164,7 +164,7 @@ export function generateToken(): string {
 }
 
 
-export function reserveUpload(
+export function openUpload(
 	fileID: string, ownerID: string, token: string
 ): RunResult {
 	const expiry = Date.now() + Config.uploadTokenLifespan;

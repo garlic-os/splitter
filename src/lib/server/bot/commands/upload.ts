@@ -28,7 +28,7 @@ async function waitUntilUploaded(
 	fileID: string,
 	token: string
 ): Promise<DB.UploadReport> {
-	DB.reserveUpload(fileID, userID, token);
+	db.openUpload(fileID, userID, token);
 	const report = await new Promise<DB.UploadReport>(
 		(resolve, reject) => {
 			DB.pendingUploads.set(fileID, { resolve, reject });
