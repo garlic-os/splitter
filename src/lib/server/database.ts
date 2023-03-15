@@ -169,6 +169,24 @@ export function getUploadInfo(
 }
 
 
+interface FileExport {
+	name: NonNullable<DB.FileEntry["name"]>;
+	contentType: DB.FileEntry["contentType"];
+	urls: string[];
+}
+getFilesByOwnerID.stmt = con.prepare(`
+	SELECT name, contentType, GROUP_CONCAT(url, " ") AS urls
+	FROM files
+	JOIN parts
+	ON files.id = parts.fileID
+	WHERE ownerID = ?
+	GROUP BY files.id
+`);
+export function getFilesByOwnerID(ownerID: string): FileExport[] {
+	return getFilesByOwnerID.stmt.all(ownerID);
+}
+
+
 const chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_";
 export function generateToken(): string {
 	let result = "";
