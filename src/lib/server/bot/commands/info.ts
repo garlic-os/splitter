@@ -20,9 +20,6 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
                 .setDescription("Splitter is a Discord bot that allows you to split files into smaller chunks, and then recombine them later. It's useful for sharing large files, or for sending files that are too large to send in a single message.\n[GitHub](https://github.com/garlic-os/Splitter)")
                 .setColor(Colors.blue)
                 .setThumbnail(interaction.client.user.displayAvatarURL())
-                .setFooter({
-                    text: `By using this bot you agree to Splitter's [privacy policy](https://github.com/garlic-os/splitter/blob/main/privacy-policy.md)`,
-                })
         ]
     });
 }
