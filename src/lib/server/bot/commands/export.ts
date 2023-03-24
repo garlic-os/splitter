@@ -7,7 +7,7 @@ export const data = new Discord.SlashCommandBuilder()
 	.setDescription("Get a digest of all your files");
 
 
-export const execute = async (interaction: Discord.ChatInputCommandInteraction): Promise<void> => {
+export async function execute(interaction: Discord.ChatInputCommandInteraction): Promise<void> {
 	interaction.deferReply({ ephemeral: true });
 	const files = db.getFilesByOwnerID(interaction.user.id);
 	const json = JSON.stringify(files, null, 2);
@@ -19,4 +19,4 @@ export const execute = async (interaction: Discord.ChatInputCommandInteraction):
 			}
 		]
 	});
-};
+}
