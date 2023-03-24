@@ -8,15 +8,15 @@ export const data = new Discord.SlashCommandBuilder()
 
 
 export async function execute(interaction: Discord.ChatInputCommandInteraction): Promise<void> {
-	interaction.deferReply({ ephemeral: true });
 	const files = db.getFilesByOwnerID(interaction.user.id);
 	const json = JSON.stringify(files, null, 2);
-	interaction.editReply({
+	interaction.reply({
 		files: [
 			{
 				name: `export-${interaction.user.id}.json`,
 				attachment: Buffer.from(json, "utf-8"),
 			}
-		]
+		],
+		ephemeral: true
 	});
 }
