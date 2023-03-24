@@ -44,7 +44,7 @@ export const data = new Discord.SlashCommandBuilder()
 	.setDescription("Upload a file beyond the Discord file size limit.");
 
 
-export const execute = async (interaction: Discord.ChatInputCommandInteraction): Promise<void> => {
+export async function execute(interaction: Discord.ChatInputCommandInteraction): Promise<void> {
 	// Skip duplicate requests. Sometimes the bot receives several requests in a
 	// row for the same interaction 🤷‍♂️
 	if (db.pendingUploads.has(interaction.id)) return;
@@ -77,4 +77,4 @@ export const execute = async (interaction: Discord.ChatInputCommandInteraction):
 	db.setUploadInfo(interaction.id, notifMessage.channelId, notifMessage.id);
 	console.info(`[UPLOAD ${interaction.id}] Sent confirmation`);
 	interaction.deleteReply();
-};
+}

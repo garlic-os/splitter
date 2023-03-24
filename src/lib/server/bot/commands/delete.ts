@@ -153,7 +153,7 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 		]
 	});
 	console.info(`[DELETE ${fileID}] Confirmation sent`);
-};
+}
 
 
 // https://discordjs.guide/slash-commands/autocomplete.html#sending-results

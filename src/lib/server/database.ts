@@ -169,6 +169,47 @@ export function getUploadInfo(
 }
 
 
+interface FileExport {
+	name: DB.FileEntry["name"];
+	contentType: DB.FileEntry["contentType"];
+	channelID: DB.FileEntry["channelID"];
+	uploadNotifID: DB.FileEntry["uploadNotifID"];
+	parts: {
+		urls: DB.PartEntry["url"][];
+		messageIDs: DB.PartEntry["messageID"][];
+	};
+}
+getFilesByOwnerID.stmt = con.prepare(`
+	SELECT
+		name,
+		contentType,
+		channelID,
+		uploadNotifID,
+		GROUP_CONCAT(url) AS urls,
+		GROUP_CONCAT(messageID) AS messageIDs
+	FROM
+		files
+		INNER JOIN parts
+			ON parts.fileID = id
+	WHERE
+		ownerID = ?
+`);
+export function getFilesByOwnerID(ownerID: string): FileExport[] {
+	return getFilesByOwnerID.stmt.all(ownerID).map((row) => {
+		return {
+			name: row.name,
+			contentType: row.contentType,
+			channelID: row.channelID,
+			uploadNotifID: row.uploadNotifID,
+			parts: {
+				urls: row.urls.split(" "),
+				messageIDs: row.messageIDs.split(" ")
+			}
+		};
+	});
+}
+
+
 const chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_";
 export function generateToken(): string {
 	let result = "";
