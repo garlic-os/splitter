@@ -11,6 +11,7 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 	const files = db.getFilesByOwnerID(interaction.user.id);
 	const json = JSON.stringify(files, null, 2);
 	interaction.reply({
+		content: "Here is the data of all the files you've uploaded through Splitter:",
 		files: [
 			{
 				name: `export-${interaction.user.id}.json`,
