@@ -170,6 +170,7 @@ export function getUploadInfo(
 
 
 interface FileExport {
+	id: DB.FileEntry["id"];
 	name: DB.FileEntry["name"];
 	contentType: DB.FileEntry["contentType"];
 	channelID: DB.FileEntry["channelID"];
@@ -181,6 +182,7 @@ interface FileExport {
 }
 getFilesByOwnerID.stmt = con.prepare(`
 	SELECT
+		id,
 		name,
 		contentType,
 		channelID,
@@ -195,8 +197,11 @@ getFilesByOwnerID.stmt = con.prepare(`
 		ownerID = ?
 `);
 export function getFilesByOwnerID(ownerID: string): FileExport[] {
-	return getFilesByOwnerID.stmt.all(ownerID).map((row) => {
+	const rows = getFilesByOwnerID.stmt.all(ownerID);
+	if (rows[0].id === null) return [];
+	return rows.map((row) => {
 		return {
+			id: row.id,
 			name: row.name,
 			contentType: row.contentType,
 			channelID: row.channelID,
