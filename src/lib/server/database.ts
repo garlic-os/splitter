@@ -30,7 +30,7 @@ process.on("exit", () => {
 });
 
 
-export const pendingUploads = new Map<string, DB.PendingUpload>();
+export const pendingUploads: { [fileID: string]: DB.PendingUpload } = {};
 
 
 // Update the file's name and content type
