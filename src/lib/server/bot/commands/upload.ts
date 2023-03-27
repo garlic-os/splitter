@@ -31,10 +31,10 @@ async function waitUntilUploaded(
 	db.openUpload(fileID, userID, token);
 	const report = await new Promise<DB.UploadReport>(
 		(resolve, reject) => {
-			db.pendingUploads.set(fileID, { resolve, reject });
+			db.pendingUploads[fileID] = { resolve, reject };
 		}
 	);
-	db.pendingUploads.delete(fileID);
+	delete db.pendingUploads[fileID];
 	return report;
 }
 
@@ -47,7 +47,7 @@ export const data = new Discord.SlashCommandBuilder()
 export async function execute(interaction: Discord.ChatInputCommandInteraction): Promise<void> {
 	// Skip duplicate requests. Sometimes the bot receives several requests in a
 	// row for the same interaction 🤷‍♂️
-	if (db.pendingUploads.has(interaction.id)) return;
+	if (interaction.id in db.pendingUploads) return;
 
 	const token = db.generateToken();
 	interaction.reply({
