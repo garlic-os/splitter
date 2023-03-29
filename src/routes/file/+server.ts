@@ -23,14 +23,10 @@ async function splitAndUpload(
 	let bytesRead = 0;
 	const uploadingChunks = (async () => {
 		let partNumber = 0;
-		const chunkReader = chunkStream.readable.getReader();
 		const uploadPromises = [];
-		while (true) {
-			const result = await chunkReader.read();
-			if (result.done) {
-				console.info(`[UPLOAD ${fileEntry.id}] Chunk uploads complete`);
-				break;
-			}
+		const chunkReader = chunkStream.readable.getReader();
+		let result: ReadableStreamReadResult<Uint8Array>;
+		while (!(result = await chunkReader.read()).done) {
 			bytesRead += result.value.byteLength;
 			partNumber++;
 			uploadPromises.push(
@@ -44,7 +40,7 @@ async function splitAndUpload(
 			);
 			console.info(`[UPLOAD ${fileEntry.id}] Part ${partNumber}: ${result.value.byteLength} bytes`);
 		}
-		chunkReader.releaseLock();
+		console.info(`[UPLOAD ${fileEntry.id}] Chunk uploads complete`);
 		await Promise.all(uploadPromises);
 	})();
 
