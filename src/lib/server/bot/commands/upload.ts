@@ -67,8 +67,8 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 	const mention = interaction.guild ? `<@${interaction.user.id}>` : "You";
 	const notifMessage = await interaction.followUp({
 		content: `${mention} posted a file: ` +
-				 `${Config.webappURL}/file/${interaction.id}/${filename}\n` +
-				 `${humanFileSize(filesize, 2)}`,
+			     `${Config.webappURL}/file/${interaction.id}/${filename}\n` +
+			     `${humanFileSize(filesize, 2)}`,
 		allowedMentions: {
 			users: []
 		},

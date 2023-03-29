@@ -141,7 +141,7 @@ getFilenamesAndIDByAuthorID.stmt = con.prepare(`
 `);
 export function getFilenamesAndIDByAuthorID(
 	ownerID: string,
-	startsWith: string = ""
+	startsWith = ""
 ): FilenameAndID[] {
 	return getFilenamesAndIDByAuthorID.stmt.all(ownerID, startsWith + "%");
 }
