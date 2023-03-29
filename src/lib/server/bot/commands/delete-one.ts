@@ -54,7 +54,7 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 	await interaction.deferReply({ ephemeral: true });
 
 	console.info(`[DELETE ${fileID}] New request`);
-	const encounteredError = await deleteFile(interaction, fileID);
+	const encounteredError = await deleteFile(interaction.client, fileID);
 
 	if (encounteredError) {
 		console.warn(`[DELETE ${fileID}] Complete with errors`);

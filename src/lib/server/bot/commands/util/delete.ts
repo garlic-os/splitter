@@ -16,7 +16,7 @@ export function coerceIntoError(maybeErr: unknown): Error {
 
 // I LOVE HANDLING ERRORS!!! I LOVE CHECKING FOR NULL!!!
 export async function getNotificationMessage(
-	interaction: Discord.ChatInputCommandInteraction,
+	client: Discord.Client,
 	fileID: string
 ): Promise<Discord.Message> {
 	const uploadInfo = db.getUploadInfo(fileID);
@@ -29,7 +29,7 @@ export async function getNotificationMessage(
 		throw `[DELETE ${fileID}] Missing upload info ${JSON.stringify(uploadInfo)}`;
 	}
 
-	const uploadNotifChannel = await interaction.client.channels.fetch(channelID);
+	const uploadNotifChannel = await client.channels.fetch(channelID);
 	if (!(uploadNotifChannel instanceof Discord.TextChannel)) {
 		throw `[DELETE ${fileID}] Invalid notification channel ID ${channelID}`;
 	}
@@ -48,7 +48,7 @@ export async function getNotificationMessage(
 // 2. The messages that contain the file's parts.
 // 3. The file entry in the database.
 export async function deleteFile(
-	interaction: Discord.ChatInputCommandInteraction,
+	client: Discord.Client,
 	fileID: string
 ): Promise<boolean> {
 	const removalsInProgress: Promise<unknown>[] = [];
@@ -56,7 +56,7 @@ export async function deleteFile(
 
 	// Delete the upload notification message.
 	try {
-		const message = await getNotificationMessage(interaction, fileID);
+		const message = await getNotificationMessage(client, fileID);
 		removalsInProgress.push(message.delete());
 	} catch (err: unknown) {
 		console.error(err);
