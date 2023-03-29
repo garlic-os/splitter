@@ -4,7 +4,7 @@ import * as Config from "../../../../config";
 
 
 // Lazy load the upload channel.
-let uploadChannel: Discord.TextChannel | null = null;;
+let uploadChannel: Discord.TextChannel | null = null;
 export async function getUploadChannel(): Promise<Discord.TextChannel> {
 	if (!uploadChannel) {
 		const channel = await client.channels.fetch(Config.discordUploadChannelID);
