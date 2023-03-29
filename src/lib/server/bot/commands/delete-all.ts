@@ -1,6 +1,5 @@
 import Discord from "discord.js";
 import * as db from "$lib/server/database";
-import * as colors from "$lib/server/bot/colors";
 import { deleteFile } from "$lib/server/bot/commands/util/delete";
 
 
@@ -40,7 +39,7 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 				new Discord.EmbedBuilder()
 					.setTitle("Couldn't delete")
 					.setDescription("An error occurred while deleting these files:")
-					.setColor(colors.red)
+					.setColor(Discord.Colors.Red)
 					.addFields([
 						{
 							name: "Files",
@@ -58,7 +57,7 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 			new Discord.EmbedBuilder()
 				.setTitle("All files deleted")
 				.setDescription(`Successfully deleted ${files.length} files.`)
-				.setColor(colors.green)
+				.setColor(Discord.Colors.Green)
 		]
 	});
 	console.info(`[DELETE ALL ${interaction.user.id}] Confirmation sent`);
