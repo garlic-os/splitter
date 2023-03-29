@@ -51,7 +51,7 @@ export async function deleteFile(
 	interaction: Discord.ChatInputCommandInteraction,
 	fileID: string
 ): Promise<boolean> {
-	const removalsInProgress: Promise<any>[] = [];
+	const removalsInProgress: Promise<unknown>[] = [];
 	let encounteredError = false;
 
 	// Delete the upload notification message.
