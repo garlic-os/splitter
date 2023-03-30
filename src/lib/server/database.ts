@@ -19,7 +19,7 @@ con.exec(`
 	) STRICT;
 
 	CREATE TABLE IF NOT EXISTS parts (
-		fileID     TEXT  PRIMARY KEY REFERENCES files(id) ON DELETE CASCADE,
+		fileID     TEXT  REFERENCES files(id) ON DELETE CASCADE,
 		messageID  TEXT  NOT NULL,
 		url        TEXT  NOT NULL
 	) STRICT;
