@@ -8,7 +8,7 @@ con.pragma("journal_mode = WAL");
 con.pragma("foreign_keys = ON");
 con.exec(`
 	CREATE TABLE IF NOT EXISTS files (
-		id             TEXT     NOT NULL PRIMARY KEY UNIQUE,
+		id             TEXT     PRIMARY KEY,
 		ownerID        TEXT     NOT NULL,
 		uploadToken    TEXT     NOT NULL,
 		uploadExpiry   INTEGER  NOT NULL,
@@ -16,13 +16,13 @@ con.exec(`
 		contentType    TEXT     DEFAULT "application/octet-stream",
 		channelID      TEXT     DEFAULT NULL,
 		uploadNotifID  TEXT     DEFAULT NULL
-	);
+	) STRICT;
 
 	CREATE TABLE IF NOT EXISTS parts (
-		fileID     TEXT  NOT NULL PRIMARY KEY REFERENCES files(id) ON DELETE CASCADE,
+		fileID     TEXT  PRIMARY KEY REFERENCES files(id) ON DELETE CASCADE,
 		messageID  TEXT  NOT NULL,
 		url        TEXT  NOT NULL
-	);
+	) STRICT;
 `);
 
 
