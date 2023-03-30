@@ -5,6 +5,7 @@ import * as Config from "../../../config";
 
 const con = new Database(Config.databasePath);
 con.pragma("journal_mode = WAL");
+con.pragma("foreign_keys = ON");
 con.exec(`
 	CREATE TABLE IF NOT EXISTS files (
 		id             TEXT     NOT NULL PRIMARY KEY UNIQUE,
