@@ -1,6 +1,5 @@
 import Discord from "discord.js";
 import * as db from "$lib/server/database";
-import * as colors from "$lib/server/bot/colors";
 import { deleteFile } from "$lib/server/bot/commands/util/delete";
 
 
@@ -10,20 +9,52 @@ export const data = new Discord.SlashCommandBuilder()
 
 
 export async function execute(interaction: Discord.ChatInputCommandInteraction): Promise<void> {
-	await interaction.deferReply({ ephemeral: true });
-
 	console.info(`[DELETE ALL ${interaction.user.id}] New request`);
+	const row = new Discord.ActionRowBuilder<Discord.ButtonBuilder>()
+		.addComponents(
+			new Discord.ButtonBuilder()
+				.setCustomId("delete-all-cancel")
+				.setLabel("Cancel")
+				.setStyle(Discord.ButtonStyle.Secondary),
+			new Discord.ButtonBuilder()
+				.setCustomId("delete-all-confirm")
+				.setLabel("Delete all files")
+				.setStyle(Discord.ButtonStyle.Danger),
+		);
+
+	const sentMessage = await interaction.reply({
+		embeds: [
+			new Discord.EmbedBuilder()
+				.setTitle("Delete all files")
+				.setDescription("Are you sure you want to delete all of your files?\n**This action cannot be undone.**")
+				.setColor(Discord.Colors.Red)
+		],
+		components: [row],
+		ephemeral: true,
+	});
+
+	const buttonEvent = await sentMessage.awaitMessageComponent<Discord.ComponentType.Button>({
+		time: 15_000,
+	});
+
+	if (buttonEvent.customId === "delete-all-cancel") {
+		console.info(`[DELETE ALL ${interaction.user.id}] Canceled by user`);
+		interaction.deleteReply();
+		return;
+	}
+
+	await buttonEvent.deferReply();
 	const files = db.getFilesByOwnerID(interaction.user.id);
 
 	if (files.length === 0) {
-		await interaction.editReply("❌ You don't have any files to delete.");
+		await buttonEvent.editReply("❌ You don't have any files to delete.");
 		return;
 	}
 
 	const erroredFileIDs: string[] = [];
 
 	for (const file of files) {
-		const encounteredError = await deleteFile(interaction, file.id);
+		const encounteredError = await deleteFile(interaction.client, file.id);
 		if (encounteredError) {
 			console.warn(`[DELETE ALL ${file.id}] Complete with errors`);
 			erroredFileIDs.push(file.id);
@@ -35,12 +66,12 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 	if (erroredFileIDs.length > 0) {
 		// List the files that couldn't be deleted, up to 20,
 		// then say "and X more" if there are more than 20.
-		await interaction.editReply({
+		await buttonEvent.editReply({
 			embeds: [
 				new Discord.EmbedBuilder()
 					.setTitle("Couldn't delete")
 					.setDescription("An error occurred while deleting these files:")
-					.setColor(colors.red)
+					.setColor(Discord.Colors.Red)
 					.addFields([
 						{
 							name: "Files",
@@ -53,12 +84,12 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 		return;
 	}
 
-	await interaction.editReply({
+	await buttonEvent.editReply({
 		embeds: [
 			new Discord.EmbedBuilder()
 				.setTitle("All files deleted")
 				.setDescription(`Successfully deleted ${files.length} files.`)
-				.setColor(colors.green)
+				.setColor(Discord.Colors.Greyple)
 		]
 	});
 	console.info(`[DELETE ALL ${interaction.user.id}] Confirmation sent`);

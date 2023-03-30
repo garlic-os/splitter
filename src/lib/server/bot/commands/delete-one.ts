@@ -1,6 +1,5 @@
 import Discord from "discord.js";
 import * as db from "$lib/server/database";
-import * as colors from "$lib/server/bot/colors";
 import { deleteFile } from "$lib/server/bot/commands/util/delete";
 
 
@@ -10,6 +9,7 @@ async function validateMetadata(
 	metadata: Partial<DB.FileEntry> | null
 ): Promise<void> {
 	if (!metadata) {
+		console.info(`[DELETE ${fileID}] Canceled: file not found`)
 		await interaction.reply({
 			content: `File \`${fileID}\` not found.`,
 			ephemeral: true,
@@ -17,13 +17,14 @@ async function validateMetadata(
 		return;
 	}
 	if (metadata.ownerID !== interaction.user.id) {
+		console.info(`[DELETE ${fileID}] Canceled: not owner`)
 		await interaction.reply({
 			ephemeral: true,
 			embeds: [
 				new Discord.EmbedBuilder()
 					.setTitle("Couldn't delete")
 					.setDescription("You are not the owner of this file.")
-					.setColor(colors.red)
+					.setColor(Discord.Colors.Red)
 					.addFields([
 						{ name: "Filename", value: `\`${metadata.name}\``, inline: true },
 						{ name: "ID", value: `\`${fileID}\``, inline: true }
@@ -46,25 +47,61 @@ export const data = new Discord.SlashCommandBuilder()
 	);
 
 
-// Usage: /delete <filename>
-// Uses Discord's chat command autocomplete feature to suggest filenames.
 export async function execute(interaction: Discord.ChatInputCommandInteraction): Promise<void> {
 	const fileID = interaction.options.getString("filename", true);
+	console.info(`[DELETE ${fileID}] New request`);
+
 	const metadata = db.getMetadata(fileID);
 	await validateMetadata(interaction, fileID, metadata);
-	await interaction.deferReply({ ephemeral: true });
 
-	console.info(`[DELETE ${fileID}] New request`);
-	const encounteredError = await deleteFile(interaction, fileID);
+	const row = new Discord.ActionRowBuilder<Discord.ButtonBuilder>()
+		.addComponents(
+			new Discord.ButtonBuilder()
+				.setCustomId("delete-cancel")
+				.setLabel("Cancel")
+				.setStyle(Discord.ButtonStyle.Secondary),
+			new Discord.ButtonBuilder()
+				.setCustomId("delete-confirm")
+				.setLabel("Delete")
+				.setStyle(Discord.ButtonStyle.Danger),
+		);
+
+	const sentMessage = await interaction.reply({
+		embeds: [
+			new Discord.EmbedBuilder()
+				.setTitle("Delete file")
+				.setDescription("Are you sure you want to delete this file?")
+				.setColor(Discord.Colors.Red)
+				.addFields([
+					{ name: "Filename", value: `\`${metadata!.name}\``, inline: true },
+					{ name: "ID", value: `\`${fileID}\``, inline: true },
+				])
+		],
+		components: [row],
+		ephemeral: true,
+	});
+
+	const buttonEvent = await sentMessage.awaitMessageComponent<Discord.ComponentType.Button>({
+		time: 15_000,
+	});
+
+	if (buttonEvent.customId === "delete-cancel") {
+		console.info(`[DELETE ${fileID}] Canceled by user`);
+		interaction.deleteReply();
+		return;
+	}
+
+	await buttonEvent.deferReply();
+	const encounteredError = await deleteFile(interaction.client, fileID);
 
 	if (encounteredError) {
 		console.warn(`[DELETE ${fileID}] Complete with errors`);
-		await interaction.editReply({
+		await buttonEvent.editReply({
 			embeds: [
 				new Discord.EmbedBuilder()
 					.setTitle("Couldn't delete")
 					.setDescription("An error occurred while deleting the file.")
-					.setColor(colors.red)
+					.setColor(Discord.Colors.Red)
 					.addFields([
 						{ name: "Filename", value: `\`${metadata!.name}\``, inline: true },
 						{ name: "ID", value: `\`${fileID}\``, inline: true },
@@ -75,12 +112,12 @@ export async function execute(interaction: Discord.ChatInputCommandInteraction):
 	}
 
 	console.info(`[DELETE ${fileID}] Complete`);
-	await interaction.editReply({
+	await buttonEvent.editReply({
 		embeds: [
 			new Discord.EmbedBuilder()
 				.setTitle("File deleted")
 				.setDescription("The file was deleted successfully.")
-				.setColor(colors.green)
+				.setColor(Discord.Colors.Greyple)
 				.addFields([
 					{ name: "Filename", value: `\`${metadata!.name}\``, inline: true },
 					{ name: "ID", value: `\`${fileID}\``, inline: true },

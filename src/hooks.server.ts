@@ -4,7 +4,8 @@ if (parseInt(process.env.REGISTER_COMMANDS ?? "0")) {
 }
 else {
 	// Start the bot immediately; it has to be up even before the first request,
-	// because it may well broker the first request through a /upload command.
+	// because it may well be the broker of the first request through a
+	// /upload command.
 	const { activateCommands } = await import("$lib/server/bot/activate-commands");
 	activateCommands();
 
