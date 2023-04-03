@@ -45,6 +45,7 @@ export function setMetadata(
 	name: string,
 	contentType: string
 ): RunResult {
+	console.debug("Setting metadata", { id, name, contentType });
 	return setMetadata.stmt.run(name, contentType, id);
 }
 
@@ -56,6 +57,7 @@ getMetadata.stmt = con.prepare(`
 export function getMetadata(
 	id: string
 ): Pick<DB.FileEntry, "name" | "contentType" | "ownerID"> | null {
+	console.debug("Getting metadata", { id });
 	return getMetadata.stmt.get(id);
 }
 
@@ -66,6 +68,7 @@ getURLs.stmt = con.prepare(`
 	WHERE fileID = ?
 `).pluck();
 export function getURLs(fileID: string): string[] {
+	console.debug("Getting URLs", { fileID });
 	return getURLs.stmt.all(fileID);
 }
 
@@ -75,6 +78,7 @@ addPart.stmt = con.prepare(`
 	VALUES (?, ?, ?)
 `);
 export function addPart(fileID: string, messageID: string, url: string): RunResult {
+	console.debug("Adding part", { fileID, messageID, url });
 	return addPart.stmt.run(fileID, messageID, url);
 }
 
@@ -84,6 +88,7 @@ getParts.stmt = con.prepare(`
 	WHERE fileID = ?
 `);
 export function getParts(fileID: string): Omit<DB.PartEntry, "fileID">[] {
+	console.debug("Getting parts", { fileID });
 	return getParts.stmt.all(fileID);
 }
 
@@ -94,6 +99,7 @@ closeUpload.stmt = con.prepare(`
 	WHERE id = ?
 `);
 export function closeUpload(id: string): RunResult {
+	console.debug("Closing upload", { id });
 	return closeUpload.stmt.run(id);
 }
 
@@ -106,6 +112,7 @@ addFile.stmt = con.prepare(`
 function addFile(
 	fileID: string, ownerID: string, token: string, expiry: number
 ): RunResult {
+	console.debug("Adding file", { fileID, ownerID, token, expiry });
 	return addFile.stmt.run(fileID, ownerID, token, expiry);
 }
 
@@ -114,6 +121,7 @@ deleteFile.stmt = con.prepare(`
 	WHERE id = ?
 `);
 export function deleteFile(id: string): RunResult {
+	console.debug("Deleting file", { id });
 	return deleteFile.stmt.run(id);
 }
 
@@ -125,6 +133,7 @@ getFileByToken.stmt = con.prepare(`
 export function getFileByToken(
 	token: string | null
 ): Pick<DB.FileEntry, "id" | "uploadExpiry"> | null {
+	console.debug("Getting file by token", { token });
 	return getFileByToken.stmt.get(token);
 }
 
@@ -144,6 +153,7 @@ export function getFilenamesAndIDByAuthorID(
 	ownerID: string,
 	startsWith = ""
 ): FilenameAndID[] {
+	console.debug("Getting filenames and IDs by author ID", { ownerID, startsWith });
 	return getFilenamesAndIDByAuthorID.stmt.all(ownerID, startsWith + "%");
 }
 
@@ -155,6 +165,7 @@ setUploadInfo.stmt = con.prepare(`
 export function setUploadInfo(
 	fileID: string, channelID: string, messageID: string
 ): RunResult {
+	console.debug("Setting upload info", { fileID, channelID, messageID });
 	return setUploadInfo.stmt.run(channelID, messageID, fileID);
 }
 
@@ -166,6 +177,7 @@ getUploadInfo.stmt = con.prepare(`
 export function getUploadInfo(
 	fileID: string
 ): Pick<DB.FileEntry, "channelID" | "uploadNotifID"> | null {
+	console.debug("Getting upload info", { fileID });
 	return getUploadInfo.stmt.get(fileID);
 }
 
@@ -198,6 +210,7 @@ getFilesByOwnerID.stmt = con.prepare(`
 		ownerID = ?
 `);
 export function getFilesByOwnerID(ownerID: string): FileExport[] {
+	console.debug("Getting files by owner ID", { ownerID });
 	const rows = getFilesByOwnerID.stmt.all(ownerID);
 	if (rows[0].id === null) return [];
 	return rows.map((row) => {
