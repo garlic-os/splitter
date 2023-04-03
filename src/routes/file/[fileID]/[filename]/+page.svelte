@@ -70,11 +70,9 @@
 
 
 <svelte:head>
-	<title>Download | Splitter</title>
+	<title>{data.filename}</title>
 </svelte:head>
 
-<h1>Splitter</h1>
-<h2>{data.filename}</h2>
 <div class="download">
 	{#if state === "downloading"}
 		<ProgressBar {percent} />
@@ -111,8 +109,9 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		width: 80vw;
-		height: 70vh;
+		justify-content: center;
+		width: 100vw;
+		height: 100vh;
 	}
 	.download > * {
 		margin: 1rem;
