@@ -7,7 +7,7 @@
 		"start": "pnpm run build && pnpm run host",
 		"dev": "vite dev",
 		"build": "vite build",
-		"host": "vite preview --host --https --port 443",
+		"host": "vite preview --host --port 80",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "eslint .",
