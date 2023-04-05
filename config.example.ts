@@ -11,3 +11,7 @@ export const corsProxyURL: string = `http://localhost:${corsProxyPort}`;
 export const discordBotToken: string = "";
 export const discordClientID: string = "";
 export const discordUploadChannelID: string = "";
+
+// For HTTPS
+export const sslKeyPath: string | undefined = undefined;
+export const sslCertPath: string | undefined = undefined;
