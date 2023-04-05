@@ -17,15 +17,15 @@
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^2.0.0",
-		"@sveltejs/kit": "^1.14.0",
+		"@sveltejs/kit": "^1.15.1",
 		"@types/better-sqlite3": "^7.6.3",
-		"@typescript-eslint/eslint-plugin": "^5.57.0",
-		"@typescript-eslint/parser": "^5.57.0",
+		"@typescript-eslint/eslint-plugin": "^5.57.1",
+		"@typescript-eslint/parser": "^5.57.1",
 		"eslint": "^8.37.0",
 		"eslint-plugin-svelte3": "^4.0.0",
 		"run-script-os": "^1.1.6",
-		"svelte": "^3.57.0",
-		"svelte-check": "^3.1.4",
+		"svelte": "^3.58.0",
+		"svelte-check": "^3.2.0",
 		"tslib": "^2.5.0",
 		"typescript": "^4.9.5",
 		"vite": "^4.2.1"
@@ -33,7 +33,7 @@
 	"dependencies": {
 		"better-sqlite3": "^8.2.0",
 		"cors-anywhere": "^0.4.4",
-		"discord.js": "^14.8.0",
+		"discord.js": "^14.9.0",
 		"http-status-codes": "^2.2.0"
 	}
 }
