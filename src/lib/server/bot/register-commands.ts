@@ -1,5 +1,5 @@
 import * as Discord from "discord.js";
-import * as Config from "../../../../config";
+import * as Config from "$config";
 import { commands } from "$lib/server/bot/commands";
 
 // Grab the SlashCommandBuilder#toJSON() output of each command for deployment.

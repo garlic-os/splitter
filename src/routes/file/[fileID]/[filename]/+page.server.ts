@@ -1,7 +1,7 @@
 import type { PageServerLoad } from "./$types";
 import { error } from "@sveltejs/kit";
 import StatusCodes from "http-status-codes";
-import * as Config from "../../../../../config";
+import * as Config from "$config";
 import * as DB from "$lib/server/database";
 
 

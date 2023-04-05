@@ -1,6 +1,6 @@
 import Discord from "discord.js";
 import { client } from "./client";
-import * as Config from "../../../../config";
+import * as Config from "$config";
 
 
 // Lazy load the upload channel.

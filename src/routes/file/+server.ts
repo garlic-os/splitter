@@ -1,7 +1,7 @@
 import type { RequestHandler } from "./$types";
 import { error } from "@sveltejs/kit";
 import StatusCodes from "http-status-codes";
-import * as Config from "../../../config";
+import * as Config from "$config";
 import * as db from "$lib/server/database";
 import * as bot from "$lib/server/bot";
 import SetSizeChunkStream from "$lib/server/set-size-chunk-stream";
