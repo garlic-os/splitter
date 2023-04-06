@@ -22,9 +22,8 @@ function getGeneralContentType(
 
 
 export const load = (({ params }) => {
-	// Bypass CORS lmao
 	const urls = DB.getURLs(params.fileID)
-		.map(url => `${Config.corsProxyURL}/${url}`);
+		.map(url => `chunk/${url}`);
 	if (urls.length === 0) {
 		throw error(StatusCodes.NOT_FOUND, "Not found");
 	}
