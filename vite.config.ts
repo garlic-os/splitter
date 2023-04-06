@@ -1,10 +1,10 @@
 import fs from "node:fs";
 import { sveltekit } from "@sveltejs/kit/vite";
-import { defineConfig, type UserConfigExport } from "vite";
+import { defineConfig } from "vite";
 import * as Config from "./config";
 
 
-const viteConfig: UserConfigExport = {
+export default defineConfig({
 	plugins: [sveltekit()],
 	server: {
 		// Bypass CORS on Discord file downloads lmao
@@ -17,17 +17,10 @@ const viteConfig: UserConfigExport = {
 					`${Config.corsProxyURL}/https://cdn.discordapp.com/attachments`
 				),
 			},
-		}
+		},
+		https: Config.sslKeyPath && Config.sslCertPath ? {
+			key: fs.readFileSync(Config.sslKeyPath),
+			cert: fs.readFileSync(Config.sslCertPath),
+		} : undefined,
 	}
-};
-
-
-if (Config.sslKeyPath && Config.sslCertPath) {
-	viteConfig.server!.https = {
-		key: fs.readFileSync(Config.sslKeyPath),
-		cert: fs.readFileSync(Config.sslCertPath),
-	};
-}
-
-
-export default defineConfig(viteConfig);
+});
