@@ -2,10 +2,7 @@ import corsProxy from "cors-anywhere";
 import * as Config from "$config";
 
 export const server = corsProxy.createServer({
-	originWhitelist: [
-		`http://127.0.0.1:${Config.webappPort}`,
-		`http://localhost:${Config.webappPort}`,
-	],
+	originWhitelist: [Config.webappURL],
 });
 
 server.listen(Config.corsProxyPort, "127.0.0.1", () => {
