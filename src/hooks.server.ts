@@ -3,9 +3,9 @@ if (parseInt(process.env.REGISTER_COMMANDS ?? "0")) {
 	process.exit();
 }
 else {
-	// Start the bot immediately; it has to be up even before the first request,
-	// because it may well be the broker of the first request through a
-	// /upload command.
+	// Start the bot immediately. Otherwise it will be lazy-loaded when the
+	// first request comes in, and that isn't going to work when it provides
+	// authentication to the API.
 	const { activateCommands } = await import("$lib/server/bot/activate-commands");
 	activateCommands();
 
