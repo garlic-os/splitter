@@ -1,10 +1,10 @@
 import fs from "node:fs";
 import { sveltekit } from "@sveltejs/kit/vite";
-import { defineConfig } from "vite";
+import { defineConfig, type UserConfig } from "vite";
 import * as Config from "./config";
 
 
-export default defineConfig({
+const viteConfig: UserConfig = {
 	plugins: [sveltekit()],
 	server: {
 		// Bypass CORS on Discord's CDN lmao
@@ -18,9 +18,16 @@ export default defineConfig({
 				)
 			},
 		},
-		https: Config.sslKeyPath && Config.sslCertPath ? {
-			key: fs.readFileSync(Config.sslKeyPath),
-			cert: fs.readFileSync(Config.sslCertPath),
-		} : undefined,
 	}
-});
+};
+
+viteConfig.server = viteConfig.server ?? {};
+
+if (Config.sslKeyPath && Config.sslCertPath) {
+	viteConfig.server.https = {
+		key: fs.readFileSync(Config.sslKeyPath),
+		cert: fs.readFileSync(Config.sslCertPath)
+	};
+}
+
+export default defineConfig(viteConfig);
