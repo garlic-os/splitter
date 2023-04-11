@@ -1,7 +1,6 @@
 import type { PageServerLoad } from "./$types";
 import { error } from "@sveltejs/kit";
 import StatusCodes from "http-status-codes";
-import * as Config from "$config";
 import * as DB from "$lib/server/database";
 
 
@@ -23,7 +22,7 @@ function getGeneralContentType(
 
 export const load = (({ params }) => {
 	const urls = DB.getURLs(params.fileID)
-		.map(url => `chunk/${url}`);
+		.map(url => `/chunk/${url.replace("https://cdn.discordapp.com/attachments/", "")}`);
 	if (urls.length === 0) {
 		throw error(StatusCodes.NOT_FOUND, "Not found");
 	}

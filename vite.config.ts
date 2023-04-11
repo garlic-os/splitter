@@ -7,15 +7,15 @@ import * as Config from "./config";
 export default defineConfig({
 	plugins: [sveltekit()],
 	server: {
-		// Bypass CORS on Discord file downloads lmao
+		// Bypass CORS on Discord's CDN lmao
 		proxy: {
 			"^/chunk/.*": {
-				target: Config.webappURL,
+				target: "https://cdn.discordapp.com",
 				changeOrigin: true,
 				rewrite: (path) => path.replace(
-					/^.*chunk/,
-					`${Config.corsProxyURL}/https://cdn.discordapp.com/attachments`
-				),
+					"chunk",
+					"attachments"
+				)
 			},
 		},
 		https: Config.sslKeyPath && Config.sslCertPath ? {

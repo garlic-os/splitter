@@ -8,9 +8,6 @@ else {
 	// authentication to the API.
 	const { activateCommands } = await import("$lib/server/bot/activate-commands");
 	activateCommands();
-
-	// Start the CORS proxy for the GET /file/[fileID]/[filename] route.
-	import("$lib/server/cors-proxy");
 }
 
 export {};
