@@ -18,6 +18,7 @@ const viteConfig: UserConfig = {
 				)
 			},
 		},
+		port: 80
 	}
 };
 
@@ -28,6 +29,7 @@ if (Config.sslKeyPath && Config.sslCertPath) {
 		key: fs.readFileSync(Config.sslKeyPath),
 		cert: fs.readFileSync(Config.sslCertPath)
 	};
+	viteConfig.server.port = 443;
 }
 
 export default defineConfig(viteConfig);
