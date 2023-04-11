@@ -1,4 +1,4 @@
-export const webappPort: number = 5173;
+const webappPort: number = 5173;
 export const webappURL: string = `http://localhost:${webappPort}`;
 
 export const databasePath: string = "./database.db";
