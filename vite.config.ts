@@ -30,6 +30,9 @@ if (Config.sslKeyPath && Config.sslCertPath) {
 		cert: fs.readFileSync(Config.sslCertPath)
 	};
 	viteConfig.server.port = 443;
+	console.debug("Using HTTPS");
+} else {
+	console.debug("Using HTTP");
 }
 
 export default defineConfig(viteConfig);
