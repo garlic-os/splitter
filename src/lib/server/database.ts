@@ -3,6 +3,7 @@ import Database from "better-sqlite3";
 import * as Config from "$config";
 
 
+
 const con = new Database(Config.databasePath);
 con.pragma("journal_mode = WAL");
 con.pragma("foreign_keys = ON");
@@ -10,7 +11,7 @@ con.exec(`
 	CREATE TABLE IF NOT EXISTS files (
 		id             TEXT     PRIMARY KEY,
 		ownerID        TEXT     NOT NULL,
-		uploadToken    TEXT     NOT NULL,
+		uploadToken    CHAR(${tokenLength}) NOT NULL,
 		uploadExpiry   INTEGER  NOT NULL,
 		name           TEXT     DEFAULT NULL,
 		contentType    TEXT     DEFAULT "application/octet-stream",
@@ -236,8 +237,8 @@ export function getFilesByOwnerID(ownerID: string): FileExport[] {
 const chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_";
 export function generateToken(): string {
 	let result = "";
-	for (let i = 32; i > 0; --i) {
 		result += chars[Math.floor(Math.random() * chars.length)];
+	for (let i = tokenLength; i > 0; --i) {
 	}
 	return result;
 }
