@@ -4,7 +4,7 @@ export const webappURL: string = `http://localhost:${webappPort}`;
 export const databasePath: string = "./database.db";
 
 export const uploadTokenLifespan: number = 1000 * 60 * 60 * 24;  // 24 hours
-export const partSize: number = 1024 * 1024 * 8;  // 8 MB
+export const partSize: number = 1024 * 1024 * 25;  // 8 MB
 export const fileSizeLimit: number = 1024 * 1024 * 1024;  // 1 GB
 
 export const discordBotToken: string = "";
