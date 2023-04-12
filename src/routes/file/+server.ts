@@ -23,25 +23,31 @@ async function splitAndUpload(
 	let bytesRead = 0;
 	const uploadingChunks = (async () => {
 		let partNumber = 0;
-		const uploadPromises = [];
 		const chunkReader = chunkStream.readable.getReader();
+
 		let result: ReadableStreamReadResult<Uint8Array>;
 		while (!(result = await chunkReader.read()).done) {
 			bytesRead += result.value.byteLength;
 			partNumber++;
-			uploadPromises.push(
-				(async () => {
-					const { messageID, url } = await bot.uploadToDiscord(
-						Buffer.from(result.value),
-						`${filename}.part${partNumber}`
-					);
-					db.addPart(fileEntry.id, messageID, url);
-				})()
+			const { messageID, url } = await bot.uploadToDiscord(
+				Buffer.from(result.value),
+				`${filename}.part${partNumber}`
 			);
+			db.addPart(fileEntry.id, messageID, url);
+
+			// 1. Write buffer to temp file
+			// 2. Accumulate 10 temp files
+			// 3. Upload them all to Discord in one message
+			//    - Change bot.uploadToDiscord to accept an array of filepaths
+			// 4. Receive the 10 attachment URLs
+			// 5. Add each part to the database in one query
+			//    - Replace db.AddPart with db.AddParts
 			console.info(`[UPLOAD ${fileEntry.id}] Part ${partNumber}: ${result.value.byteLength} bytes`);
 		}
+		// 1. Check for leftover accumulated temp files
+		// 2. Upload them
+
 		console.info(`[UPLOAD ${fileEntry.id}] Chunk uploads complete`);
-		await Promise.all(uploadPromises);
 	})();
 
 	// Run the two above tasks in parallel.

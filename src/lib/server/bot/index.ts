@@ -19,16 +19,22 @@ export async function getUploadChannel(): Promise<Discord.TextChannel> {
 
 interface UploadResult {
 	messageID: string;
-	url: string;
+	urls: string[];
 }
-export async function uploadToDiscord(buffer: Buffer, filename: string): Promise<UploadResult> {
-	const attachment = new Discord.AttachmentBuilder(buffer, {
-		name: filename,
-	});
+export async function uploadToDiscord(
+	filePaths: string[],
+	filename: string
+): Promise<UploadResult> {
+	const attachments = [];
+	for (const filePath of filePaths) {
+		attachments.push(new Discord.AttachmentBuilder(filePath, {
+			name: filename,
+		}));
+	}
 	const uploadChannel = await getUploadChannel();
-	const sentMessage = await uploadChannel.send({ files: [attachment] });
+	const sentMessage = await uploadChannel.send({ files: attachments });
 	return {
 		messageID: sentMessage.id,
-		url: sentMessage.attachments.first()!.url,
+		urls: sentMessage.attachments.map(a => a.url),
 	};
 }

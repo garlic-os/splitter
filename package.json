@@ -33,6 +33,7 @@
 	"dependencies": {
 		"better-sqlite3": "^8.2.0",
 		"discord.js": "^14.9.0",
-		"http-status-codes": "^2.2.0"
+		"http-status-codes": "^2.2.0",
+		"tempy": "^3.0.0"
 	}
 }

@@ -72,24 +72,28 @@ export function getURLs(fileID: string): string[] {
 	return getURLs.stmt.all(fileID);
 }
 
-addPart.stmt = con.prepare(`
+const addPartsStmt = con.prepare<[string, string, string]>(`
 	INSERT INTO parts
 	(fileID, messageID, url)
 	VALUES (?, ?, ?)
 `);
-export function addPart(fileID: string, messageID: string, url: string): RunResult {
-	console.debug("Adding part", { fileID, messageID, url });
-	return addPart.stmt.run(fileID, messageID, url);
-}
+export const addParts = con.transaction((fileID: string, messageID: string, urls: string[]) => {
+	console.debug("Adding parts", { fileID, messageID, urls });
+	for (const url of urls) {
+		addPartsStmt.run(fileID, messageID, url);
+	}
+});
 
-getParts.stmt = con.prepare(`
+
+
+const getPartsStmt = con.prepare<[string]>(`
 	SELECT messageID, url
 	FROM parts
 	WHERE fileID = ?
 `);
 export function getParts(fileID: string): Omit<DB.PartEntry, "fileID">[] {
 	console.debug("Getting parts", { fileID });
-	return getParts.stmt.all(fileID);
+	return getPartsStmt.all(fileID);
 }
 
 
