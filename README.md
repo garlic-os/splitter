@@ -8,16 +8,16 @@ npm run register-commands
 ```
 You only need to register the slash commands once per bot account.
 
-## Development server
+## Development
 ```bash
 npm run dev
 
 # or start the server and open the app in a new browser tab
 npm run dev -- --open
 ```
-(When in dev mode, a quirk in Vite makes it so you have to open the webapp once for the bot to start.)
+When in dev mode, a quirk in Vite makes it so you have to open the webapp once for the bot to start.
 
-## Production build
+## Production
 ```bash
 npm run host
 ```
