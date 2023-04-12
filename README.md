@@ -23,5 +23,5 @@ npm run host
 ```
 
 ---
-Upload icon from [visualpharm.com](https://www.visualpharm.com/)
+Upload icon from [visualpharm.com](https://www.visualpharm.com/)  
 Scissors icon from [svgrepo.com](https://www.svgrepo.com/svg/479957/scissors)
