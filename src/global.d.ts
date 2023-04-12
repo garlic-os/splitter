@@ -1,4 +1,4 @@
-namespace Bot {
+declare namespace Bot {
 	interface SlashCommandHandler {
 		data: Discord.SlashCommandBuilder;
 		execute(interaction: Discord.CommandInteraction): Promise<void>;
@@ -10,7 +10,7 @@ namespace Bot {
 }
 
 
-namespace DB {
+declare namespace DB {
 	interface FileEntry {
 		id: string;
 		uploadToken: string;
