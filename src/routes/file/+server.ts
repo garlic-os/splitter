@@ -1,15 +1,35 @@
 import type { RequestHandler } from "./$types";
 import { error } from "@sveltejs/kit";
 import StatusCodes from "http-status-codes";
+import tempy from "tempy";
 import * as Config from "$config";
 import * as db from "$lib/server/database";
 import * as bot from "$lib/server/bot";
 import SetSizeChunkStream from "$lib/server/set-size-chunk-stream";
 
 
-// Merge the stream into Config.partSize chunks and upload each to Discord.
-// Data may come in chunks of any size, but we want them to be Discord's
-// max file size.
+async function uploadParts(
+	filePaths: string[],
+	filename: string,
+	partNumber: number,
+	fileID: DB.FileEntry["id"]
+): Promise<void> {
+	const { messageID, urls } = await bot.uploadToDiscord(
+		filePaths,
+		`${filename}.part${partNumber}`
+	);
+	db.addParts(fileID, messageID, urls);
+}
+
+
+/**
+ * Merge the stream into Config.partSize chunks and upload them to Discord.
+ * Data may come in chunks of any size, but we want them to be Discord's
+ * max file size.
+ * Parts are uploaded 10 at a time (the number of attachments you can have
+ * in one message).
+ * @returns the number of bytes read from the stream.
+ */
 async function splitAndUpload(
 	stream: ReadableStream<Uint8Array>,
 	filename: string,
@@ -24,28 +44,23 @@ async function splitAndUpload(
 	const uploadingChunks = (async () => {
 		let partNumber = 0;
 		const chunkReader = chunkStream.readable.getReader();
+		const filePaths = [];
 
 		let result: ReadableStreamReadResult<Uint8Array>;
 		while (!(result = await chunkReader.read()).done) {
 			bytesRead += result.value.byteLength;
 			partNumber++;
-			const { messageID, url } = await bot.uploadToDiscord(
-				Buffer.from(result.value),
-				`${filename}.part${partNumber}`
-			);
-			db.addPart(fileEntry.id, messageID, url);
-
-			// 1. Write buffer to temp file
-			// 2. Accumulate 10 temp files
-			// 3. Upload them all to Discord in one message
-			//    - Change bot.uploadToDiscord to accept an array of filepaths
-			// 4. Receive the 10 attachment URLs
-			// 5. Add each part to the database in one query
-			//    - Replace db.AddPart with db.AddParts
+			filePaths.push(await tempy.temporaryWrite(result.value));
+			if (filePaths.length >= 10) {
+				await uploadParts(filePaths, filename, partNumber, fileEntry.id);
+				filePaths.length = 0;
+			}
 			console.info(`[UPLOAD ${fileEntry.id}] Part ${partNumber}: ${result.value.byteLength} bytes`);
 		}
-		// 1. Check for leftover accumulated temp files
-		// 2. Upload them
+
+		if (filePaths.length > 0) {
+			await uploadParts(filePaths, filename, partNumber, fileEntry.id);
+		}
 
 		console.info(`[UPLOAD ${fileEntry.id}] Chunk uploads complete`);
 	})();
