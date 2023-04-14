@@ -34,6 +34,8 @@ When in dev mode, a quirk in Vite makes it so you have to open the webapp once f
 npm run host
 ```
 
+​
+
 Public bot instance coming maybe?
 
 ---
