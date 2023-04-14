@@ -1,6 +1,15 @@
 # Splitter
 [Project progress](https://github.com/users/garlic-os/projects/4/views/1?query=is%3Aopen+sort%3Aupdated-desc&layout=board)
 
+Splitter is a Discord bot that offers one utility: upload files larger than the channel's file size limit.  
+There are plenty of ways to do that: maybe split it with 7-Zip and upload several chunks, or just upload it somewhere else then post the link. Splitter aims to provide a standard way for users within Discord to do this as easily as possible.  
+With Splitter,
+1. You don't split files yourself. It splits them and uploads each chunk for you.
+2. You don't need to post any link. When the upload is done, it posts the link for you.
+3. You barely need to leave Discord at all. Start in Discord, click your link and upload to Splitter's minimal webapp, then go right back to Discord.
+
+The experience using Splitter is as close as can be to just uploading any regular file to Discord. Except your file is a gigabyte even though your Boost Level 3 server only natively supports 100 MBs.
+
 ## Setup
 Install your dependencies with `npm install` (or `pnpm install` or `yarn`), then register the bot's slash commands:
 ```bash
