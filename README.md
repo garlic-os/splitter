@@ -11,7 +11,7 @@ With Splitter,
 3. You barely need to leave Discord at all. Start in Discord, click your link and upload to Splitter's minimal webapp, then go right back to Discord.
 4. When someone wants to download your file, they click the link, the webapp reconstitutes the file, and it shows up in the browser.
 
-Splitter aims to make the experience as close as can be to just uploading any regular file to Discord. Except your file can be five gigabytes.
+Splitter aims to make the experience as close as can be to just uploading any regular file to Discord. Except your file can be ten gigabytes.
 
 ## Setup
 Install your dependencies with `npm install` (or `pnpm install` or `yarn`), then register the bot's slash commands:
