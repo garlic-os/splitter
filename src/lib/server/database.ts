@@ -1,4 +1,3 @@
-import type { RunResult } from "better-sqlite3";
 import Database from "better-sqlite3";
 import * as Config from "$config";
 
