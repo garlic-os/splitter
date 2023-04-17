@@ -108,7 +108,7 @@ export const PUT = (async ({ request }) => {
 		throw error(StatusCodes.BAD_REQUEST, `No filename provided - "X-Filename" header is missing`);
 	}
 	if (!contentLength) {
-		throw error(StatusCodes.BAD_REQUEST, `No content length provided - "Content-Length" header is missing`);
+		throw error(StatusCodes.LENGTH_REQUIRED, `No content length provided - "Content-Length" header is missing`);
 	}
 	if (contentLength > Config.fileSizeLimit) {
 		throw error(StatusCodes.BAD_REQUEST, `File is too large - ${contentLength} bytes`);
