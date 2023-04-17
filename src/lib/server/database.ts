@@ -116,7 +116,7 @@ const addFileStmt = con.prepare<[string, string, string, number]>(`
 function addFile(
 	fileID: string, ownerID: string, token: string, expiry: number
 ): void {
-	console.debug("Adding file", { fileID, ownerID, token, expiry });
+	console.debug("Adding file", { fileID, ownerID, expiry });
 	addFileStmt.run(fileID, ownerID, token, expiry);
 }
 
@@ -137,7 +137,7 @@ const getFileByTokenStmt = con.prepare<[string | null]>(`
 export function getFileByToken(
 	token: string | null
 ): Pick<DB.FileEntry, "id" | "uploadExpiry"> | null {
-	console.debug("Getting file by token", { token });
+	console.debug("Getting file by token");
 	return getFileByTokenStmt.get(token);
 }
 
