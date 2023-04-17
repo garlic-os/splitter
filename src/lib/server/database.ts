@@ -37,7 +37,7 @@ export const pendingUploads: { [fileID: string]: DB.PendingUpload } = {};
 
 
 // Update the file's name and content type
-setMetadataStmt = con.prepare<[string, string, string]>(`
+const setMetadataStmt = con.prepare<[string, string, string]>(`
 	UPDATE files
 	SET name = ?, contentType = ?
 	WHERE id = ?
