@@ -23,12 +23,12 @@ interface UploadResult {
 }
 export async function uploadToDiscord(
 	filePaths: string[],
-	filename: string
+	filenames: string[]
 ): Promise<UploadResult> {
 	const attachments = [];
-	for (const filePath of filePaths) {
-		attachments.push(new Discord.AttachmentBuilder(filePath, {
-			name: filename,
+	for (let i = 0; i < filePaths.length; i++) {
+		attachments.push(new Discord.AttachmentBuilder(filePaths[i], {
+			name: filenames[i],
 		}));
 	}
 	const uploadChannel = await getUploadChannel();

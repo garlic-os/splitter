@@ -8,24 +8,24 @@ import * as bot from "$lib/server/bot";
 import StreamSlicer from "$lib/server/stream-slicer";
 
 
+// @pre: filePaths.length <= 10
 async function uploadParts(
 	filePaths: string[],
 	filename: string,
-	partNumber: number,
+	partIndex: number,
 	fileID: DB.FileEntry["id"]
 ): Promise<void> {
-	const { messageID, urls } = await bot.uploadToDiscord(
-		filePaths,
-		`${filename}.part${partNumber}`
-	);
+	const filenames = [];
+	for (let i = 0; i < filePaths.length; i++) {
+		filenames.push(`${filename}.part${partIndex + i}`);
+	}
+	const { messageID, urls } = await bot.uploadToDiscord(filePaths, filenames);
 	db.addParts(fileID, messageID, urls);
 }
 
 
 /**
- * Merge the stream into Config.partSize chunks and upload them to Discord.
- * Data may come in chunks of any size, but we want them to be Discord's
- * max file size.
+ * Make Config.partSize-sized chunks out of a stream and upload them to Discord.
  * Parts are uploaded 10 at a time (the number of attachments you can have
  * in one message).
  * @returns the number of bytes read from the stream.
@@ -42,24 +42,24 @@ async function splitAndUpload(
 	// Get the size-conditioned chunks and upload them to Discord.
 	let bytesRead = 0;
 	const uploadingChunks = (async () => {
-		let partNumber = 0;
+		let partIndex = 0;
 		const chunkReader = chunkStream.readable.getReader();
 		const filePaths = [];
 
 		let result: ReadableStreamReadResult<Uint8Array>;
 		while (!(result = await chunkReader.read()).done) {
 			bytesRead += result.value.byteLength;
-			partNumber++;
 			filePaths.push(await tempy.temporaryWrite(result.value));
 			if (filePaths.length >= 10) {
-				await uploadParts(filePaths, filename, partNumber, fileEntry.id);
+				await uploadParts(filePaths, filename, partIndex, fileEntry.id);
+				partIndex += filePaths.length - 1;
 				filePaths.length = 0;
 			}
-			console.info(`[UPLOAD ${fileEntry.id}] Part ${partNumber}: ${result.value.byteLength} bytes`);
+			console.info(`[UPLOAD ${fileEntry.id}] Part ${partIndex}: ${result.value.byteLength} bytes`);
 		}
 
 		if (filePaths.length > 0) {
-			await uploadParts(filePaths, filename, partNumber, fileEntry.id);
+			await uploadParts(filePaths, filename, partIndex, fileEntry.id);
 		}
 
 		console.info(`[UPLOAD ${fileEntry.id}] Chunk uploads complete`);
