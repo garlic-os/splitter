@@ -17,7 +17,7 @@
 	 * Content-Type.
 	 * If the file is a video, an image, or an audio file, embed it onto the
 	 * page.
-	 * If the file is text, put it into the page in a <pre> element.
+	 * If the file is text, put it into the page in a <textarea> element.
 	 * Otherwise, present it as a file download.
 	 */
 	async function presentFile(fileBlob: Blob) {
@@ -89,7 +89,7 @@
 				<source src={downloadURL} type={data.contentType} />
 			</audio>
 		{:else if data.type === "text"}
-			<pre>{downloadURL}</pre>
+			<textarea>{downloadURL}</textarea>
 		{:else}
 			<a bind:this={downloadButton}
 			href={downloadURL}
@@ -119,5 +119,16 @@
 	video {
 		max-width: 100%;
 		max-height: 100%;
+	}
+
+	textarea {
+		min-height: 80vh;
+		min-width: 50vw;
+		font-family: monospace;
+		background: var(--DISCORD-MID);
+		border-radius: 10px;
+		border: 1px solid var(--DISCORD-DARK);
+		color: var(--DISCORD-PRE-TEXT);
+		padding: 0.5rem;
 	}
 </style>
