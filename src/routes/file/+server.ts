@@ -5,7 +5,7 @@ import tempy from "tempy";
 import * as Config from "$config";
 import * as db from "$lib/server/database";
 import * as bot from "$lib/server/bot";
-import SetSizeChunkStream from "$lib/server/set-size-chunk-stream";
+import StreamSlicer from "$lib/server/stream-slicer";
 
 
 async function uploadParts(
@@ -35,8 +35,8 @@ async function splitAndUpload(
 	filename: string,
 	fileEntry: Pick<DB.FileEntry, "id" | "uploadExpiry">,
 ): Promise<number> {
-	// Pipe the stream into a SetSizeChunkStream to size-condition its chunks.
-	const chunkStream = new SetSizeChunkStream(Config.partSize);
+	// Pipe the stream into a StreamSlicer to size-condition its chunks.
+	const chunkStream = new StreamSlicer(Config.partSize);
 	const makingChunks = stream.pipeTo(chunkStream.writable);
 
 	// Get the size-conditioned chunks and upload them to Discord.

@@ -1,7 +1,7 @@
 /**
  * Split or merge the chunks of a stream into chunks of a given size.
  */
-export default class SetSizeChunkStream extends TransformStream<Uint8Array, Uint8Array> {
+export default class StreamSlicer extends TransformStream<Uint8Array, Uint8Array> {
 	private buffer: Uint8Array;
 	private offset: number;
 
