@@ -98,6 +98,7 @@ export const PUT = (async ({ request }) => {
 	const token = request.headers.get("authorization");
 	const filename = request.headers.get("x-filename")?.replaceAll(" ", "_");
 	const contentType = request.headers.get("content-type") ?? "application/octet-stream";
+	const contentLength = parseInt(request.headers.get("content-length") ?? "");
 	const fileEntry = db.getFileByToken(token);
 
 	if (!fileEntry || fileEntry.uploadExpiry < Date.now()) {
@@ -106,11 +107,17 @@ export const PUT = (async ({ request }) => {
 	if (!filename) {
 		throw error(StatusCodes.BAD_REQUEST, `No filename provided - "X-Filename" header is missing`);
 	}
+	if (!contentLength) {
+		throw error(StatusCodes.BAD_REQUEST, `No content length provided - "Content-Length" header is missing`);
+	}
+	if (contentLength > Config.fileSizeLimit) {
+		throw error(StatusCodes.BAD_REQUEST, `File is too large - ${contentLength} bytes`);
+	}
 	if (!request.body) {
 		throw error(StatusCodes.BAD_REQUEST, "No file provided");
 	}
 
-	console.info(`[UPLOAD ${fileEntry.id}] Receiving file`);
+	console.info(`[UPLOAD ${fileEntry.id}] Receiving file: "${filename}", ${contentLength} bytes`);
 
 	// Enter the file metadata we'll need into the database.
 	db.setMetadata(fileEntry.id, filename, contentType);
