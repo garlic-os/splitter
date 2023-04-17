@@ -2,6 +2,7 @@ import type { PageServerLoad } from "./$types";
 import { error } from "@sveltejs/kit";
 import StatusCodes from "http-status-codes";
 import * as DB from "$lib/server/database";
+import * as Config from "$config";
 
 
 export const load = (({ params }) => {
@@ -13,5 +14,6 @@ export const load = (({ params }) => {
 	}
 	return {
 		token: params.token,
+		fileSizeLimit: Config.fileSizeLimit,
 	};
 }) satisfies PageServerLoad;
