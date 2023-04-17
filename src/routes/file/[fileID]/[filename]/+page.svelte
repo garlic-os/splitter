@@ -13,12 +13,12 @@
 
 
 	/**
-	 * Presents the file to the user. The way it does it depends on the file's
+	 * Present the file to the user in a way that is conscious of the file's
 	 * Content-Type.
-	 * If the file is a video, an image, or an audio file, it will be embedded
-	 * onto the page as its respective HTML element.
-	 * If the file is text, it will be put into the page in a <pre> element.
-	 * Otherwise, it will be downloaded.
+	 * If the file is a video, an image, or an audio file, embed it onto the
+	 * page.
+	 * If the file is text, put it into the page in a <pre> element.
+	 * Otherwise, present it as a file download.
 	 */
 	async function presentFile(fileBlob: Blob) {
 		statusText = "🔃 Processing...";
