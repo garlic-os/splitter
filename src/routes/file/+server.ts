@@ -52,7 +52,7 @@ async function splitAndUpload(
 			filePaths.push(await tempy.temporaryWrite(result.value));
 			if (filePaths.length >= 10) {
 				await uploadParts(filePaths, filename, partIndex, fileEntry.id);
-				partIndex += filePaths.length - 1;
+				partIndex += filePaths.length;
 				filePaths.length = 0;
 			}
 			console.info(`[UPLOAD ${fileEntry.id}] Part ${partIndex}: ${result.value.byteLength} bytes`);
