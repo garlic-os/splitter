@@ -1,4 +1,3 @@
-import type { RunResult } from "better-sqlite3";
 import Database from "better-sqlite3";
 import * as Config from "$config";
 
@@ -35,7 +34,7 @@ export const pendingUploads: { [fileID: string]: DB.PendingUpload } = {};
 
 
 // Update the file's name and content type
-setMetadata.stmt = con.prepare(`
+const setMetadataStmt = con.prepare<[string, string, string]>(`
 	UPDATE files
 	SET name = ?, contentType = ?
 	WHERE id = ?
@@ -44,12 +43,12 @@ export function setMetadata(
 	id: string,
 	name: string,
 	contentType: string
-): RunResult {
+): void {
 	console.debug("Setting metadata", { id, name, contentType });
-	return setMetadata.stmt.run(name, contentType, id);
+	setMetadataStmt.run(name, contentType, id);
 }
 
-getMetadata.stmt = con.prepare(`
+const getMetadataStmt = con.prepare<[string]>(`
 	SELECT name, contentType, ownerID
 	FROM files
 	WHERE id = ?
@@ -58,74 +57,78 @@ export function getMetadata(
 	id: string
 ): Pick<DB.FileEntry, "name" | "contentType" | "ownerID"> | null {
 	console.debug("Getting metadata", { id });
-	return getMetadata.stmt.get(id);
+	return getMetadataStmt.get(id);
 }
 
 
-getURLs.stmt = con.prepare(`
+const getURLsStmt = con.prepare<[string]>(`
 	SELECT url
 	FROM parts
 	WHERE fileID = ?
 `).pluck();
 export function getURLs(fileID: string): string[] {
 	console.debug("Getting URLs", { fileID });
-	return getURLs.stmt.all(fileID);
+	return getURLsStmt.all(fileID);
 }
 
-addPart.stmt = con.prepare(`
+const addPartsStmt = con.prepare<[string, string, string]>(`
 	INSERT INTO parts
 	(fileID, messageID, url)
 	VALUES (?, ?, ?)
 `);
-export function addPart(fileID: string, messageID: string, url: string): RunResult {
-	console.debug("Adding part", { fileID, messageID, url });
-	return addPart.stmt.run(fileID, messageID, url);
-}
+export const addParts = con.transaction((fileID: string, messageID: string, urls: string[]) => {
+	console.debug("Adding parts", { fileID, messageID, urls });
+	for (const url of urls) {
+		addPartsStmt.run(fileID, messageID, url);
+	}
+});
 
-getParts.stmt = con.prepare(`
+
+
+const getPartsStmt = con.prepare<[string]>(`
 	SELECT messageID, url
 	FROM parts
 	WHERE fileID = ?
 `);
 export function getParts(fileID: string): Omit<DB.PartEntry, "fileID">[] {
 	console.debug("Getting parts", { fileID });
-	return getParts.stmt.all(fileID);
+	return getPartsStmt.all(fileID);
 }
 
 
-closeUpload.stmt = con.prepare(`
+const closeUploadStmt = con.prepare<[string]>(`
 	UPDATE files
 	SET uploadExpiry = 0
 	WHERE id = ?
 `);
-export function closeUpload(id: string): RunResult {
+export function closeUpload(id: string): void {
 	console.debug("Closing upload", { id });
-	return closeUpload.stmt.run(id);
+	closeUploadStmt.run(id);
 }
 
 
-addFile.stmt = con.prepare(`
+const addFileStmt = con.prepare<[string, string, string, number]>(`
 	INSERT INTO files
 	(id, ownerID, uploadToken, uploadExpiry)
 	VALUES (?, ?, ?, ?)
 `);
 function addFile(
 	fileID: string, ownerID: string, token: string, expiry: number
-): RunResult {
-	console.debug("Adding file", { fileID, ownerID, token, expiry });
-	return addFile.stmt.run(fileID, ownerID, token, expiry);
+): void {
+	console.debug("Adding file", { fileID, ownerID, expiry });
+	addFileStmt.run(fileID, ownerID, token, expiry);
 }
 
-deleteFile.stmt = con.prepare(`
+const deleteFileStmt = con.prepare<[string]>(`
 	DELETE FROM files
 	WHERE id = ?
 `);
-export function deleteFile(id: string): RunResult {
+export function deleteFile(id: string): void {
 	console.debug("Deleting file", { id });
-	return deleteFile.stmt.run(id);
+	deleteFileStmt.run(id);
 }
 
-getFileByToken.stmt = con.prepare(`
+const getFileByTokenStmt = con.prepare<[string | null]>(`
 	SELECT id, uploadExpiry
 	FROM files
 	WHERE uploadToken = ?
@@ -133,8 +136,8 @@ getFileByToken.stmt = con.prepare(`
 export function getFileByToken(
 	token: string | null
 ): Pick<DB.FileEntry, "id" | "uploadExpiry"> | null {
-	console.debug("Getting file by token", { token });
-	return getFileByToken.stmt.get(token);
+	console.debug("Getting file by token");
+	return getFileByTokenStmt.get(token);
 }
 
 // For searching with autocomplete
@@ -142,7 +145,7 @@ interface FilenameAndID {
 	id: DB.FileEntry["id"];
 	name: NonNullable<DB.FileEntry["name"]>;
 }
-getFilenamesAndIDByAuthorID.stmt = con.prepare(`
+const getFilenamesAndIDByAuthorIDStmt = con.prepare<[string, string]>(`
 	SELECT id, name
 	FROM files
 	WHERE ownerID = ?
@@ -154,22 +157,22 @@ export function getFilenamesAndIDByAuthorID(
 	startsWith = ""
 ): FilenameAndID[] {
 	console.debug("Getting filenames and IDs by author ID", { ownerID, startsWith });
-	return getFilenamesAndIDByAuthorID.stmt.all(ownerID, startsWith + "%");
+	return getFilenamesAndIDByAuthorIDStmt.all(ownerID, startsWith + "%");
 }
 
-setUploadInfo.stmt = con.prepare(`
+const setUploadInfoStmt = con.prepare<[string, string, string]>(`
 	UPDATE files
 	SET channelID = ?, uploadNotifID = ?
 	WHERE id = ?
 `);
 export function setUploadInfo(
 	fileID: string, channelID: string, messageID: string
-): RunResult {
+): void {
 	console.debug("Setting upload info", { fileID, channelID, messageID });
-	return setUploadInfo.stmt.run(channelID, messageID, fileID);
+	setUploadInfoStmt.run(channelID, messageID, fileID);
 }
 
-getUploadInfo.stmt = con.prepare(`
+const getUploadInfoStmt = con.prepare<[string]>(`
 	SELECT channelID, uploadNotifID
 	FROM files
 	WHERE id = ?
@@ -178,7 +181,7 @@ export function getUploadInfo(
 	fileID: string
 ): Pick<DB.FileEntry, "channelID" | "uploadNotifID"> | null {
 	console.debug("Getting upload info", { fileID });
-	return getUploadInfo.stmt.get(fileID);
+	return getUploadInfoStmt.get(fileID);
 }
 
 
@@ -193,7 +196,7 @@ interface FileExport {
 		messageIDs: DB.PartEntry["messageID"][];
 	};
 }
-getFilesByOwnerID.stmt = con.prepare(`
+const getFilesByOwnerIDStmt = con.prepare<[string]>(`
 	SELECT
 		id,
 		name,
@@ -211,7 +214,7 @@ getFilesByOwnerID.stmt = con.prepare(`
 `);
 export function getFilesByOwnerID(ownerID: string): FileExport[] {
 	console.debug("Getting files by owner ID", { ownerID });
-	const rows = getFilesByOwnerID.stmt.all(ownerID);
+	const rows = getFilesByOwnerIDStmt.all(ownerID);
 	if (rows[0].id === null) return [];
 	return rows.map((row) => {
 		return {
@@ -229,11 +232,12 @@ export function getFilesByOwnerID(ownerID: string): FileExport[] {
 }
 
 
-const chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_";
+const generateTokenChars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_";
+const tokenLength = 32;
 export function generateToken(): string {
 	let result = "";
-	for (let i = 32; i > 0; --i) {
-		result += chars[Math.floor(Math.random() * chars.length)];
+	for (let i = tokenLength; i > 0; --i) {
+		result += generateTokenChars[Math.floor(Math.random() * generateTokenChars.length)];
 	}
 	return result;
 }
@@ -241,7 +245,7 @@ export function generateToken(): string {
 
 export function openUpload(
 	fileID: string, ownerID: string, token: string
-): RunResult {
+): void {
 	const expiry = Date.now() + Config.uploadTokenLifespan;
-	return addFile(fileID, ownerID, token, expiry);
+	addFile(fileID, ownerID, token, expiry);
 }

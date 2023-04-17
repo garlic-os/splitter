@@ -119,7 +119,6 @@
 		background-repeat: no-repeat;
 		background-size: cover;
 		margin-bottom: 2rem;
-		filter: invert();
 	}
 
 	.icon.upload {

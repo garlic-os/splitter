@@ -5,11 +5,29 @@ html, body {
 	font-family: 'Open Sans', sans-serif;
 	font-size: 14px;
 	color: #fff;
-	background: #1a1a1a;
+	background: #1e1f22;
 }
 
 body {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+}
+
+
+/* Dark Reader styles */
+::-webkit-scrollbar {
+	background-color: #222526;
+	color: #b4aca1;
+}
+::-webkit-scrollbar-corner {
+	background-color: #191b1c;
+}
+::-webkit-scrollbar-thumb {
+	background-color: #484e51;
+}
+
+::selection {
+	background-color: #0051b3 !important;
+	color: #f4f2ee !important;
 }

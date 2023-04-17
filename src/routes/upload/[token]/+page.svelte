@@ -3,6 +3,7 @@
 	import type { FileChangeEventDetail } from "$lib/components/UploadArea.svelte";
 	import UploadArea from "$lib/components/UploadArea.svelte";
 	import ProgressBar from "$lib/components/ProgressBar.svelte";
+	import humanFileSize from "$lib/utils/human-file-size";
 	import StatusCodes from "http-status-codes";
 
 	export let data: PageServerData;
@@ -13,8 +14,8 @@
 
 
 	function sendFile(file: File): Promise<XMLHttpRequest> {
-		// XMLHttpRequest must be used because fetch doesn't support
-		// tracking upload progress
+		// XMLHttpRequest must be used because fetch doesn't support tracking
+		// upload progress
 		return new Promise<XMLHttpRequest>((resolve, reject) => {
 			const xhr = new XMLHttpRequest();
 			xhr.open("PUT", "/file");
@@ -51,6 +52,12 @@
 				state = "start";
 				statusText = "❌ Token has expired or is invalid.";
 				break;
+			case StatusCodes.BAD_REQUEST:
+				if (response.responseText.includes("too large")) {
+					state = "start";
+					statusText = `❌ File is too large. The maximum file size is ${humanFileSize(data.fileSizeLimit)}.`;
+					break;
+				}
 			default:
 				handleInvalidResponse(response);
 		}
