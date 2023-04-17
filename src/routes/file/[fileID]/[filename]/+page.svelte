@@ -3,13 +3,13 @@
 	import { onMount } from "svelte";
 	import ProgressBar from "$lib/components/ProgressBar.svelte";
 
-	export let fileInfo: PageServerData;
+	export let data: PageServerData;
 	let downloadButton: HTMLAnchorElement;
 
-	let percent = 0;  // [0, 100]
 	let state: "downloading" | "done" = "downloading";
 	let statusText = "";
 	let downloadURL = "";
+	let percent = 0;  // [0, 100]
 
 
 	/**
@@ -22,12 +22,12 @@
 	 */
 	async function presentFile(fileBlob: Blob) {
 		statusText = "🔃 Processing...";
-		if (fileInfo.type === "text") {
+		if (data.type === "text") {
 			downloadURL = await fileBlob.text();
 		} else {
 			downloadURL = URL.createObjectURL(fileBlob);
 		}
-		if (fileInfo.type === "other") {
+		if (data.type === "other") {
 			statusText = "✅ Enjoy!";
 			setTimeout( () => {  // TODO: Start the download without a hard-coded delay
 				downloadButton.click();
@@ -40,10 +40,10 @@
 
 
 	onMount(async () => {
-		fileInfo.urls.sort();
+		data.urls.sort();
 		const blobPromises = [];
-		for (const [i, url] of fileInfo.urls.entries()) {
-			statusText = `📥 Downloading part ${i + 1} of ${fileInfo.urls.length}...`;
+		for (const [i, url] of data.urls.entries()) {
+			statusText = `📥 Downloading part ${i + 1} of ${data.urls.length}...`;
 			const blobPromise = fetch(url, {
 				headers: {
 					"X-Requested-With": "XMLHttpRequest",
@@ -59,7 +59,7 @@
 		// Merge the blobs.
 		statusText = "🔃 Merging parts...";
 		const mergedBlob = new Blob(blobs, {
-			type: fileInfo.contentType,
+			type: data.contentType,
 		});
 
 		// Give the file to the user.
@@ -70,30 +70,30 @@
 
 
 <svelte:head>
-	<title>{fileInfo.filename}</title>
+	<title>{data.filename}</title>
 </svelte:head>
 
 <div class="download">
 	{#if state === "downloading"}
 		<ProgressBar {percent} />
 	{:else if state === "done"}
-		{#if fileInfo.type === "video"}
+		{#if data.type === "video"}
 			<video controls>
-				<source src={downloadURL} type={fileInfo.contentType} />
+				<source src={downloadURL} type={data.contentType} />
 				<track kind="captions" />
 			</video>
-		{:else if fileInfo.type === "image"}
+		{:else if data.type === "image"}
 			<img src={downloadURL} alt="" />
-		{:else if fileInfo.type === "audio"}
+		{:else if data.type === "audio"}
 			<audio controls>
-				<source src={downloadURL} type={fileInfo.contentType} />
+				<source src={downloadURL} type={data.contentType} />
 			</audio>
-		{:else if fileInfo.type === "text"}
+		{:else if data.type === "text"}
 			<textarea>{downloadURL}</textarea>
 		{:else}
 			<a bind:this={downloadButton}
 			href={downloadURL}
-			download={fileInfo.filename}
+			download={data.filename}
 			>
 				If your download doesn't start within a few seconds, click here
 			</a>
