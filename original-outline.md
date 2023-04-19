@@ -1,8 +1,8 @@
-Discord bot idea
+# Discord bot idea
 Facilitates uploading large files by splitting them and uploading the parts to Discord
 
 
-METHOD 1 - STANDALONE, STATIC WEBSITE
+## Method 1 - Standalone, static website
 You want to upload a file
 Go to split-files-into-8mb-chunks.com
 Upload the file at the website
@@ -19,7 +19,7 @@ Merges the parts back into the original file
 Dumps the file onto your hard drive
 
 
-METHOD 2 - DISCORD BOT + WEB INTERFACE
+## Method 2 - Discord bot + web interface
 You want to upload a file
 Do /upload
 "Go to my website to split your file for Discord"
@@ -40,7 +40,7 @@ Dumps the file onto your hard drive where you choose it to go
 
 
 
-/upload
+### /upload
 Sends a private message with a link to idksomewhere.com/upload?token=RANDOMTOKEN
 Link contains a token to make sure people are only accessing this from the bot.
 Link is private only to the user calling the command to make sure no one can upload a file on another user's behalf.
@@ -58,26 +58,56 @@ Sends a public message with a link to idksomewhere.com/download/MESSAGEID/FILENA
 FILENAME is ignored; just looks nice.
 
 
-/delete
+### /delete
 
 
-ROUTES
-GET upload(token) - the upload page; splits the file and calls PATCH file() on each part
-GET file(fileID) - the download page; calls parts(), downloads them, merges them, downloads it to the user
-POST file(fileID, authorID) - creates a new file entry; returns a token to upload files with
-PATCH file(token, filename, partData, partNumber, totalParts) - called by /upload for each part 
-GET parts(fileID) - returns file's parts' URLs
+## Routes
+- GET upload(token) - the upload page; splits the file and calls PATCH file() on each part
+- GET file(fileID) - the download page; calls parts(), downloads them, merges them, downloads it to the user
+- POST file(fileID, authorID) - creates a new file entry; returns a token to upload files with
+- PATCH file(token, filename, partData, partNumber, totalParts) - called by /upload for each part 
+- GET parts(fileID) - returns file's parts' URLs
 
 
-INTRAACTIONS
+## Interactions
 The bot is going to need to tell the server to reserve uploads.
 The server is going to need to tell the bot to upload files.
 
 
-OPTIMIZATIONS
+## Optimizations
 Stream between client and server; chunking only necessary for uploading to Discord AND it's free if you're streaming.
 - Actually, just upload the file like normal, no chunking, and the server can take it in as a stream with nothing extra.
 - Streaming should reduce the number of requests for one upload from arbitrarily many to one.
 Switch to better-sqlite3; better performance across the board.
 Don't iterate over every byte of every chunk, but use math to decide how many bytes can be copied into the buffer and do it all at once.
 Use BigInts instead of strings. Not sure whether it will work with the INTEGER type or if you will have to use BLOB.
+
+---
+
+## Potential future features
+- Upload page
+  - Start button
+  - File size indicator
+  - Cancel button
+
+- Download page
+  - Embed multimedia
+    - Image viewer
+    - Embed videos and audio
+    - Download button
+
+
+## Screens
+- Upload
+- Upload Going
+  - Status indicator at the top
+  - Loading bar at the bottom
+  - When status indicator changes to "Done",
+    - Loading bar goes away
+    - An "aside" appears to tell you you can close the page now
+- (Download doesn't need a start page; it starts downloading immediately)
+- Downloading Going
+  - Starts same as Upload Going
+  - When status indicator changes to "Done",
+    - Loading bar goes away
+    - "If download didn't work" link appears
