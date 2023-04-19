@@ -1,3 +1,5 @@
+<slot></slot>
+
 <style>
 	:global(:root) {
 		--DISCORD-DARK: #1e1f22;
