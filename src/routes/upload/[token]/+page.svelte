@@ -95,7 +95,7 @@
 	<p>{statusText}</p>
 	{#if state === "start"}
 		<UploadArea on:fileChange={upload} />
-	{:else if state === "uploading"}
+	{:else if state === "uploading" && percent !== 100}
 		<ProgressBar {percent}/>
 	{/if}
 </div>
