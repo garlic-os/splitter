@@ -24,6 +24,9 @@
 			xhr.upload.onprogress = (event) => {
 				if (event.lengthComputable) {
 					percent = Math.round((event.loaded / event.total) * 100);
+					if (percent === 100) {
+						statusText = "🔃 Processing...";
+					}
 				}
 			};
 			xhr.onload = () => {
