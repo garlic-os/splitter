@@ -8,9 +8,13 @@ client.on(Discord.Events.ClientReady, async () => {
 	console.log(`Bot logged in as ${client.user!.tag}`);
 });
 
-process.on("exit", () => {
+
+function exit() {
+	console.info("Bot logging out");
 	client.destroy();
-});
+}
+process.on("exit", exit);
+process.on("uncaughtException", exit);
 
 // Under vite live reload, the Discord client doesn't get destroyed properly, so
 // we have to do it manually. I guess this is fine since live reload doesn't

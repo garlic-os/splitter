@@ -25,9 +25,12 @@ con.exec(`
 `);
 
 
-process.on("exit", () => {
+function exit() {
+	console.info("Closing database connection");
 	con.close();
-});
+}
+process.on("exit", exit);
+process.on("uncaughtException", exit);
 
 
 export const pendingUploads: { [fileID: string]: DB.PendingUpload } = {};
