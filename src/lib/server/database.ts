@@ -3,6 +3,8 @@ import * as Config from "$config";
 
 
 const con = new Database(Config.databasePath);
+console.info("Database connected");
+
 con.pragma("journal_mode = WAL");
 con.pragma("foreign_keys = ON");
 con.exec(`
@@ -26,7 +28,7 @@ con.exec(`
 
 
 function exit() {
-	console.info("Closing database connection");
+	console.info("Disconnecting from database");
 	con.close();
 }
 process.on("exit", exit);

@@ -2,6 +2,7 @@
 import Discord from "discord.js";
 import * as Config from "$config";
 
+console.info("Bot starting");
 export const client = new Discord.Client({ intents: [] });
 
 client.on(Discord.Events.ClientReady, async () => {
@@ -10,8 +11,8 @@ client.on(Discord.Events.ClientReady, async () => {
 
 
 function exit() {
-	console.info("Bot logging out");
 	client.destroy();
+	console.info("Bot logged out");
 }
 process.on("exit", exit);
 process.on("uncaughtException", exit);
