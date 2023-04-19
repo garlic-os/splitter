@@ -20,7 +20,7 @@
 			const xhr = new XMLHttpRequest();
 			xhr.open("PUT", "/file");
 			xhr.setRequestHeader("Authorization", data.token);
-			xhr.setRequestHeader("X-Filename", file.name);
+			xhr.setRequestHeader("X-Filename", encodeURIComponent(file.name));
 			xhr.upload.onprogress = (event) => {
 				if (event.lengthComputable) {
 					percent = Math.round((event.loaded / event.total) * 100);

@@ -96,7 +96,7 @@ function reportUploadResult(fileID: string, filename: string, bytesRead: number)
 
 export const PUT = (async ({ request }) => {
 	const token = request.headers.get("authorization");
-	const filename = request.headers.get("x-filename")?.replaceAll(" ", "_");
+	const filename = decodeURIComponent(request.headers.get("x-filename") ?? "").replaceAll(" ", "_");
 	const contentType = request.headers.get("content-type") ?? "application/octet-stream";
 	const contentLength = parseInt(request.headers.get("content-length") ?? "");
 	const fileEntry = db.getFileByToken(token);
