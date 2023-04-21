@@ -39,7 +39,7 @@ export const pendingUploads: { [fileID: string]: DB.PendingUpload } = {};
 
 
 // Update the file's name and content type
-const setMetadataStmt = con.prepare<[string, string, string]>(`
+const setMetadataStmt = con.prepare(`
 	UPDATE files
 	SET name = ?, contentType = ?
 	WHERE id = ?
@@ -53,7 +53,7 @@ export function setMetadata(
 	setMetadataStmt.run(name, contentType, id);
 }
 
-const getMetadataStmt = con.prepare<[string]>(`
+const getMetadataStmt = con.prepare(`
 	SELECT name, contentType, ownerID
 	FROM files
 	WHERE id = ?
@@ -62,21 +62,21 @@ export function getMetadata(
 	id: string
 ): Pick<DB.FileEntry, "name" | "contentType" | "ownerID"> | null {
 	console.debug("Getting metadata", { id });
-	return getMetadataStmt.get(id);
+	return getMetadataStmt.get(id) as any;
 }
 
 
-const getURLsStmt = con.prepare<[string]>(`
+const getURLsStmt = con.prepare(`
 	SELECT url
 	FROM parts
 	WHERE fileID = ?
 `).pluck();
 export function getURLs(fileID: string): string[] {
 	console.debug("Getting URLs", { fileID });
-	return getURLsStmt.all(fileID);
+	return getURLsStmt.all(fileID) as any;
 }
 
-const addPartsStmt = con.prepare<[string, string, string]>(`
+const addPartsStmt = con.prepare(`
 	INSERT INTO parts
 	(fileID, messageID, url)
 	VALUES (?, ?, ?)
@@ -90,18 +90,18 @@ export const addParts = con.transaction((fileID: string, messageID: string, urls
 
 
 
-const getPartsStmt = con.prepare<[string]>(`
+const getPartsStmt = con.prepare(`
 	SELECT messageID, url
 	FROM parts
 	WHERE fileID = ?
 `);
 export function getParts(fileID: string): Omit<DB.PartEntry, "fileID">[] {
 	console.debug("Getting parts", { fileID });
-	return getPartsStmt.all(fileID);
+	return getPartsStmt.all(fileID) as any;
 }
 
 
-const closeUploadStmt = con.prepare<[string]>(`
+const closeUploadStmt = con.prepare(`
 	UPDATE files
 	SET uploadExpiry = 0
 	WHERE id = ?
@@ -112,7 +112,7 @@ export function closeUpload(id: string): void {
 }
 
 
-const addFileStmt = con.prepare<[string, string, string, number]>(`
+const addFileStmt = con.prepare(`
 	INSERT INTO files
 	(id, ownerID, uploadToken, uploadExpiry)
 	VALUES (?, ?, ?, ?)
@@ -124,7 +124,7 @@ function addFile(
 	addFileStmt.run(fileID, ownerID, token, expiry);
 }
 
-const deleteFileStmt = con.prepare<[string]>(`
+const deleteFileStmt = con.prepare(`
 	DELETE FROM files
 	WHERE id = ?
 `);
@@ -133,7 +133,7 @@ export function deleteFile(id: string): void {
 	deleteFileStmt.run(id);
 }
 
-const getFileByTokenStmt = con.prepare<[string | null]>(`
+const getFileByTokenStmt = con.prepare(`
 	SELECT id, uploadExpiry
 	FROM files
 	WHERE uploadToken = ?
@@ -142,7 +142,7 @@ export function getFileByToken(
 	token: string | null
 ): Pick<DB.FileEntry, "id" | "uploadExpiry"> | null {
 	console.debug("Getting file by token");
-	return getFileByTokenStmt.get(token);
+	return getFileByTokenStmt.get(token) as any;
 }
 
 // For searching with autocomplete
@@ -150,7 +150,7 @@ interface FilenameAndID {
 	id: DB.FileEntry["id"];
 	name: NonNullable<DB.FileEntry["name"]>;
 }
-const getFilenamesAndIDByAuthorIDStmt = con.prepare<[string, string]>(`
+const getFilenamesAndIDByAuthorIDStmt = con.prepare(`
 	SELECT id, name
 	FROM files
 	WHERE ownerID = ?
@@ -162,10 +162,10 @@ export function getFilenamesAndIDByAuthorID(
 	startsWith = ""
 ): FilenameAndID[] {
 	console.debug("Getting filenames and IDs by author ID", { ownerID, startsWith });
-	return getFilenamesAndIDByAuthorIDStmt.all(ownerID, startsWith + "%");
+	return getFilenamesAndIDByAuthorIDStmt.all(ownerID, startsWith + "%") as any;
 }
 
-const setUploadInfoStmt = con.prepare<[string, string, string]>(`
+const setUploadInfoStmt = con.prepare(`
 	UPDATE files
 	SET channelID = ?, uploadNotifID = ?
 	WHERE id = ?
@@ -177,7 +177,7 @@ export function setUploadInfo(
 	setUploadInfoStmt.run(channelID, messageID, fileID);
 }
 
-const getUploadInfoStmt = con.prepare<[string]>(`
+const getUploadInfoStmt = con.prepare(`
 	SELECT channelID, uploadNotifID
 	FROM files
 	WHERE id = ?
@@ -186,7 +186,7 @@ export function getUploadInfo(
 	fileID: string
 ): Pick<DB.FileEntry, "channelID" | "uploadNotifID"> | null {
 	console.debug("Getting upload info", { fileID });
-	return getUploadInfoStmt.get(fileID);
+	return getUploadInfoStmt.get(fileID) as any;
 }
 
 
@@ -201,7 +201,7 @@ interface FileExport {
 		messageIDs: DB.PartEntry["messageID"][];
 	};
 }
-const getFilesByOwnerIDStmt = con.prepare<[string]>(`
+const getFilesByOwnerIDStmt = con.prepare(`
 	SELECT
 		id,
 		name,
@@ -219,9 +219,9 @@ const getFilesByOwnerIDStmt = con.prepare<[string]>(`
 `);
 export function getFilesByOwnerID(ownerID: string): FileExport[] {
 	console.debug("Getting files by owner ID", { ownerID });
-	const rows = getFilesByOwnerIDStmt.all(ownerID);
+	const rows = getFilesByOwnerIDStmt.all(ownerID) as any;
 	if (rows[0].id === null) return [];
-	return rows.map((row) => {
+	return rows.map((row: any) => {
 		return {
 			id: row.id,
 			name: row.name,
