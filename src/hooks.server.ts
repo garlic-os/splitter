@@ -1,8 +1,11 @@
+import { building } from "$app/environment";
+
+
 if (parseInt(process.env.REGISTER_COMMANDS ?? "0")) {
 	await import("$lib/server/bot/register-commands");
 	process.exit();
 }
-else {
+else if (!building) {
 	// Start the bot immediately. Otherwise it will be lazy-loaded when the
 	// first request comes in, and that isn't going to work when it provides
 	// authentication to the API.
