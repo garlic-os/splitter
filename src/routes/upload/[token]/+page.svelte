@@ -61,7 +61,7 @@
 				console.error({response});
 				statusText = "❌ Unexpected response from the server. Check the console for more info.";
 		}
-
+		percent = 0;
 	}
 
 
