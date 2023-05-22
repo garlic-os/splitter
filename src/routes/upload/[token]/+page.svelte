@@ -41,11 +41,6 @@
 
 
 	function handleResponse(response: XMLHttpRequest) {
-		function handleInvalidResponse(response: XMLHttpRequest): void {
-			state = "start";
-			console.error({response});
-			statusText = "❌ Unexpected response from the server. Check the console for more info.";
-		}
 		switch (response.status) {
 			case StatusCodes.CREATED:
 				state = "done";
@@ -62,7 +57,9 @@
 					break;
 				}
 			default:
-				handleInvalidResponse(response);
+				state = "start";
+				console.error({response});
+				statusText = "❌ Unexpected response from the server. Check the console for more info.";
 		}
 
 	}
