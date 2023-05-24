@@ -4,10 +4,9 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"start": "pnpm run build && pnpm run host",
+		"start": "node ./build/index.js",
 		"dev": "vite dev",
 		"build": "vite build",
-		"host": "vite preview --host --port 443",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "eslint .",
@@ -17,6 +16,7 @@
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^2.0.0",
+		"@sveltejs/adapter-node": "^1.2.4",
 		"@sveltejs/kit": "^1.15.7",
 		"@types/better-sqlite3": "^7.6.4",
 		"@typescript-eslint/eslint-plugin": "^5.59.0",
