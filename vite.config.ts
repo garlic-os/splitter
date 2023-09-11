@@ -5,7 +5,6 @@ import { defineConfig, type UserConfig } from "vite";
 // shortcuts aren't loaded yet
 import * as CorsProxy from "./src/lib/server/cors-proxy";
 
-
 const viteConfig: UserConfig = {
 	plugins: [sveltekit()],
 };

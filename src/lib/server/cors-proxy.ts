@@ -1,7 +1,5 @@
 import type { UserConfig } from "vite";
 
-import fs from "node:fs";
-
 // Have to use normal relative paths here because this file is loaded
 // by vite.config.ts before the $config shortcut is loaded.
 import * as Config from "../../../config";
@@ -25,8 +23,8 @@ export const viteConfig: UserConfig = {
 
 if (Config.sslKeyPath && Config.sslCertPath) {
 	viteConfig.server!.https = {
-		key: fs.readFileSync(Config.sslKeyPath),
-		cert: fs.readFileSync(Config.sslCertPath)
+		key:  await Bun.file(Config.sslKeyPath).text(),
+		cert: await Bun.file(Config.sslCertPath).text(),
 	};
 	console.debug("Using HTTPS");
 } else {
