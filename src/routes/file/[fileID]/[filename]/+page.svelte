@@ -92,8 +92,8 @@
 			<textarea>{downloadURL}</textarea>
 		{:else}
 			<a bind:this={downloadButton}
-			href={downloadURL}
-			download={data.filename}
+				href={downloadURL}
+				download={data.filename}
 			>
 				If your download doesn't start within a few seconds, click here
 			</a>
