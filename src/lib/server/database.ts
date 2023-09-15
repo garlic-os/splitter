@@ -1,13 +1,13 @@
-import Database from "better-sqlite3";
+import Database from "bun:sqlite";
 import * as Config from "$config";
 
 
 const con = new Database(Config.databasePath);
 console.info("Database connected");
 
-con.pragma("journal_mode = WAL");
-con.pragma("foreign_keys = ON");
-con.exec(`
+con.run("PRAGMA journal_mode = WAL");
+con.run("PRAGMA foreign_keys = ON");
+con.run(`
 	CREATE TABLE IF NOT EXISTS files (
 		id             TEXT     PRIMARY KEY,
 		ownerID        TEXT     NOT NULL,
@@ -39,110 +39,114 @@ export const pendingUploads: { [fileID: string]: DB.PendingUpload } = {};
 
 
 // Update the file's name and content type
-const setMetadataStmt = con.prepare(`
-	UPDATE files
-	SET name = ?, contentType = ?
-	WHERE id = ?
-`);
 export function setMetadata(
 	id: string,
 	name: string,
 	contentType: string
 ): void {
 	console.debug("Setting metadata", { id, name, contentType });
-	setMetadataStmt.run(name, contentType, id);
+	const query = con.query(`
+		UPDATE files
+		SET name = ?, contentType = ?
+		WHERE id = ?
+	`);
+	query.run(name, contentType, id);
 }
 
-const getMetadataStmt = con.prepare(`
-	SELECT name, contentType, ownerID
-	FROM files
-	WHERE id = ?
-`);
+
 export function getMetadata(
 	id: string
 ): Pick<DB.FileEntry, "name" | "contentType" | "ownerID"> | null {
 	console.debug("Getting metadata", { id });
-	return getMetadataStmt.get(id) as any;
+	const query = con.query(`
+		SELECT name, contentType, ownerID
+		FROM files
+		WHERE id = ?
+	`);
+	return query.get(id) as any;
 }
 
 
-const getURLsStmt = con.prepare(`
-	SELECT url
-	FROM parts
-	WHERE fileID = ?
-`).pluck();
 export function getURLs(fileID: string): string[] {
 	console.debug("Getting URLs", { fileID });
-	return getURLsStmt.all(fileID) as any;
+	const query = con.query(`
+		SELECT url
+		FROM parts
+		WHERE fileID = ?
+	`);
+	const row = query.all(fileID) as any;
+	return row[0];
 }
 
-const addPartsStmt = con.prepare(`
-	INSERT INTO parts
-	(fileID, messageID, url)
-	VALUES (?, ?, ?)
-`);
+
 export const addParts = con.transaction((fileID: string, messageID: string, urls: string[]) => {
 	console.debug("Adding parts", { fileID, messageID, urls });
+	const query = con.query(`
+		INSERT INTO parts
+		(fileID, messageID, url)
+		VALUES (?, ?, ?)
+	`);
 	for (const url of urls) {
-		addPartsStmt.run(fileID, messageID, url);
+		query.run(fileID, messageID, url);
 	}
 });
 
 
-
-const getPartsStmt = con.prepare(`
-	SELECT messageID, url
-	FROM parts
-	WHERE fileID = ?
-`);
 export function getParts(fileID: string): Omit<DB.PartEntry, "fileID">[] {
 	console.debug("Getting parts", { fileID });
-	return getPartsStmt.all(fileID) as any;
+	const query = con.query(`
+		SELECT messageID, url
+		FROM parts
+		WHERE fileID = ?
+	`);
+	return query.all(fileID) as any;
 }
 
 
-const closeUploadStmt = con.prepare(`
-	UPDATE files
-	SET uploadExpiry = 0
-	WHERE id = ?
-`);
 export function closeUpload(id: string): void {
 	console.debug("Closing upload", { id });
-	closeUploadStmt.run(id);
+	const query = con.query(`
+		UPDATE files
+		SET uploadExpiry = 0
+		WHERE id = ?
+	`);
+	query.run(id);
 }
 
 
-const addFileStmt = con.prepare(`
-	INSERT INTO files
-	(id, ownerID, uploadToken, uploadExpiry)
-	VALUES (?, ?, ?, ?)
-`);
 function addFile(
 	fileID: string, ownerID: string, token: string, expiry: number
 ): void {
 	console.debug("Adding file", { fileID, ownerID, expiry });
-	addFileStmt.run(fileID, ownerID, token, expiry);
+	const query = con.query(`
+		INSERT INTO files
+		(id, ownerID, uploadToken, uploadExpiry)
+		VALUES (?, ?, ?, ?)
+	`);
+	query.run(fileID, ownerID, token, expiry);
 }
 
-const deleteFileStmt = con.prepare(`
-	DELETE FROM files
-	WHERE id = ?
-`);
+
 export function deleteFile(id: string): void {
 	console.debug("Deleting file", { id });
-	deleteFileStmt.run(id);
+	const query = con.query(`
+		DELETE FROM files
+		WHERE id = ?
+	`);
+	query.run(id);
 }
 
-const getFileByTokenStmt = con.prepare(`
-	SELECT id, uploadExpiry
-	FROM files
-	WHERE uploadToken = ?
-`);
+
 export function getFileByToken(
 	token: string | null
 ): Pick<DB.FileEntry, "id" | "uploadExpiry"> | null {
 	console.debug("Getting file by token");
-	return getFileByTokenStmt.get(token) as any;
+	const query = con.query(`
+		SELECT id, uploadExpiry
+		FROM files
+		WHERE uploadToken = ?
+	`);
+	return query.get(token) as any;
 }
 
 // For searching with autocomplete
@@ -150,43 +154,45 @@ interface FilenameAndID {
 	id: DB.FileEntry["id"];
 	name: NonNullable<DB.FileEntry["name"]>;
 }
-const getFilenamesAndIDByAuthorIDStmt = con.prepare(`
-	SELECT id, name
-	FROM files
-	WHERE ownerID = ?
-	AND name LIKE ?
-	AND name IS NOT NULL
-`);
 export function getFilenamesAndIDByAuthorID(
 	ownerID: string,
 	startsWith = ""
 ): FilenameAndID[] {
 	console.debug("Getting filenames and IDs by author ID", { ownerID, startsWith });
-	return getFilenamesAndIDByAuthorIDStmt.all(ownerID, startsWith + "%") as any;
+	const query = con.query(`
+		SELECT id, name
+		FROM files
+		WHERE ownerID = ?
+			AND name LIKE ?
+			AND name IS NOT NULL
+	`);
+	return query.all(ownerID, startsWith + "%") as any;
 }
 
-const setUploadInfoStmt = con.prepare(`
-	UPDATE files
-	SET channelID = ?, uploadNotifID = ?
-	WHERE id = ?
-`);
+
 export function setUploadInfo(
 	fileID: string, channelID: string, messageID: string
 ): void {
 	console.debug("Setting upload info", { fileID, channelID, messageID });
-	setUploadInfoStmt.run(channelID, messageID, fileID);
+	const query = con.query(`
+		UPDATE files
+		SET channelID = ?, uploadNotifID = ?
+		WHERE id = ?
+	`);
+	query.run(channelID, messageID, fileID);
 }
 
-const getUploadInfoStmt = con.prepare(`
-	SELECT channelID, uploadNotifID
-	FROM files
-	WHERE id = ?
-`);
+
 export function getUploadInfo(
 	fileID: string
 ): Pick<DB.FileEntry, "channelID" | "uploadNotifID"> | null {
 	console.debug("Getting upload info", { fileID });
-	return getUploadInfoStmt.get(fileID) as any;
+	const query = con.query(`
+		SELECT channelID, uploadNotifID
+		FROM files
+		WHERE id = ?
+	`);
+	return query.get(fileID) as any;
 }
 
 
@@ -201,25 +207,25 @@ interface FileExport {
 		messageIDs: DB.PartEntry["messageID"][];
 	};
 }
-const getFilesByOwnerIDStmt = con.prepare(`
-	SELECT
-		id,
-		name,
-		contentType,
-		channelID,
-		uploadNotifID,
-		GROUP_CONCAT(url) AS urls,
-		GROUP_CONCAT(messageID) AS messageIDs
-	FROM
-		files
-		INNER JOIN parts
-			ON parts.fileID = id
-	WHERE
-		ownerID = ?
-`);
 export function getFilesByOwnerID(ownerID: string): FileExport[] {
 	console.debug("Getting files by owner ID", { ownerID });
-	const rows = getFilesByOwnerIDStmt.all(ownerID) as any;
+	const query = con.query(`
+		SELECT
+			id,
+			name,
+			contentType,
+			channelID,
+			uploadNotifID,
+			GROUP_CONCAT(url) AS urls,
+			GROUP_CONCAT(messageID) AS messageIDs
+		FROM
+			files
+			INNER JOIN parts
+				ON parts.fileID = id
+		WHERE
+			ownerID = ?
+	`);
+	const rows = query.all(ownerID) as any;
 	if (rows[0].id === null) return [];
 	return rows.map((row: any) => {
 		return {
