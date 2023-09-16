@@ -3,7 +3,7 @@ import * as db from "$lib/server/database";
 import * as bot from "$lib/server/bot";
 
 
-export function coerceIntoError(maybeErr: unknown): Error {
+function coerceIntoError(maybeErr: unknown): Error {
 	if (maybeErr instanceof Error) {
 		return maybeErr;
 	} else if (maybeErr instanceof Object) {
@@ -15,7 +15,7 @@ export function coerceIntoError(maybeErr: unknown): Error {
 
 
 // I LOVE HANDLING ERRORS!!! I LOVE CHECKING FOR NULL!!!
-export async function getNotificationMessage(
+async function getNotificationMessage(
 	client: Discord.Client,
 	fileID: string
 ): Promise<Discord.Message> {

@@ -1,6 +1,6 @@
 import Discord from "discord.js";
 import * as db from "$lib/server/database";
-import { deleteFile } from "$lib/server/bot/commands/util/delete";
+import { deleteFile } from "$lib/server/bot/utils/delete-file";
 
 
 export const data = new Discord.SlashCommandBuilder()
