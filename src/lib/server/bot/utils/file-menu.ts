@@ -25,7 +25,6 @@ export class FileMenu {
 		this.userID = interaction.user.id;
 
 		this.fileCount = db.getFileCount(interaction.user.id);
-		console.debug(`[FILES ${interaction.id}] File count:`, this.fileCount);
 		if (this.fileCount === 0) {
 			throw new Error("No files");
 		}
