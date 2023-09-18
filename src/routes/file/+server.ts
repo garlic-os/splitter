@@ -107,7 +107,7 @@ export const PUT = (async ({ request }) => {
 	if (!filename) {
 		throw error(StatusCodes.BAD_REQUEST, `No filename provided - "X-Filename" header is missing`);
 	}
-	if (!contentLength) {
+	if (isNaN(contentLength)) {
 		throw error(StatusCodes.LENGTH_REQUIRED, `No content length provided - "Content-Length" header is missing`);
 	}
 	if (contentLength > Config.fileSizeLimit) {
