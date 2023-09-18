@@ -37,4 +37,10 @@ declare namespace DB {
 		resolve: (report: UploadReport) => void;
 		reject: (err: Error) => void;
 	}
+
+	interface FileListEntry {
+		name: NonNullable<DB.FileEntry["name"]>;
+		contentType: DB.FileEntry["contentType"];
+		uploadNotifID: NonNullable<DB.FileEntry["uploadNotifID"]>;
+	}
 }

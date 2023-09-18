@@ -189,6 +189,54 @@ export function getUploadInfo(
 	return getUploadInfoStmt.get(fileID) as any;
 }
 
+// Get from the database the filename, contentType, and uploadNotifID of the
+// first 25 files uploaded by the user sorted by the given attribute
+// type SortableAttribute = "name" | "uploadNotifID" | "fileExt" | "contentType";
+export function getFiles(
+	// ownerID: string, iStart: number, iEnd: number, sortBy: SortableAttribute
+	ownerID: string, iStart: number, iEnd: number, sortBy: string
+) {
+	console.debug("Getting file information", { ownerID, iStart, iEnd, sortBy });
+	if (sortBy === "fileExt") {
+		// const query = con.query<FileListEntry, [string, number, number]>(`
+		// 	SELECT name, contentType, uploadNotifID
+		// 	FROM files
+		// 	WHERE ownerID = ?
+		// 	ORDER BY SUBSTR(name, INSTR(name, ".") + 1)
+		// 	LIMIT ?, ?
+		// `);
+		// return query.all(ownerID, iStart, iEnd);
+		sortBy = 'SUBSTR(name, INSTR(name, ".") + 1)';
+	}
+	const query = con.query<
+		DB.FileListEntry,
+		// [string, SortableAttribute, number, number]
+		[string, string, number, number]
+	>(`
+		SELECT name, contentType, uploadNotifID
+		FROM files
+		WHERE ownerID = ?
+			AND name IS NOT NULL
+			AND uploadNotifID IS NOT NULL
+		ORDER BY ?
+		LIMIT ?, ?
+	`);
+	return query.all(ownerID, sortBy, iStart, iEnd);
+}
+
+
+export function getFileCount(ownerID: string) {
+	console.debug("Getting file count", { ownerID });
+	const query = con.query<number, string>(`
+		SELECT COUNT(*)
+		FROM files
+		WHERE ownerID = ?
+			AND name IS NOT NULL
+			AND uploadNotifID IS NOT NULL
+	`);
+	return query.get(ownerID) ?? 0;
+}
+
 
 interface FileExport {
 	id: DB.FileEntry["id"];
