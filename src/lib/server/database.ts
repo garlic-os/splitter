@@ -211,16 +211,16 @@ export function getFiles(
 }
 
 
-export function getFileCount(ownerID: string) {
+export function getFileCount(ownerID: string): number {
 	console.debug("Getting file count", { ownerID });
-	const query = con.query<number, string>(`
+	const query = con.query<{"COUNT(*)": number}, string>(`
 		SELECT COUNT(*)
 		FROM files
 		WHERE ownerID = ?
 			AND name IS NOT NULL
 			AND uploadNotifID IS NOT NULL
 	`);
-	return query.get(ownerID) ?? 0;
+	return Object.values(query.get(ownerID) ?? 0)[0] ?? 0;
 }
 
 
