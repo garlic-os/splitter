@@ -66,7 +66,7 @@ async function splitAndUpload(
 	})();
 
 	// Run the two above tasks in parallel.
-	// (Or as parallel as you can get in node.js but you know)
+	// (Or as parallel as you can get in JS but you know)
 	await Promise.all([makingChunks, uploadingChunks]);
 	return bytesRead;
 }
