@@ -25,7 +25,7 @@ async function uploadParts(
 
 
 /**
- * Make Config.partSize-sized chunks out of a stream and upload them to Discord.
+ * Make bot.partSize-sized chunks out of a stream and upload them to Discord.
  * Parts are uploaded 10 at a time (the number of attachments you can have
  * in one message).
  * @returns the number of bytes read from the stream.
@@ -36,7 +36,7 @@ async function splitAndUpload(
 	fileEntry: Pick<DB.FileEntry, "id" | "uploadExpiry">,
 ): Promise<number> {
 	// Pipe the stream into a StreamSlicer to size-condition its chunks.
-	const chunkStream = new StreamSlicer(Config.partSize);
+	const chunkStream = new StreamSlicer(bot.partSize);
 	const makingChunks = stream.pipeTo(chunkStream.writable);
 
 	// Get the size-conditioned chunks and upload them to Discord.

@@ -3,18 +3,28 @@ import { client } from "./client";
 import * as Config from "$config";
 
 
-// Lazy load the upload channel.
-let uploadChannel: Discord.TextChannel | null = null;
-export async function getUploadChannel(): Promise<Discord.TextChannel> {
-	if (!uploadChannel) {
-		const channel = await client.channels.fetch(Config.discordUploadChannelID);
-		if (!(channel instanceof Discord.TextChannel)) {
-			throw new Error("Invalid upload channel ID");
-		}
-		uploadChannel = channel;
-	}
-	return uploadChannel;
+const channel = await client.channels.fetch(Config.discordUploadChannelID);
+if (!(channel instanceof Discord.TextChannel)) {
+	throw new Error("Invalid upload channel ID");
 }
+export const uploadChannel = channel;
+
+
+// Set part size to the maximum file size allowed by the designated upload
+// channel's premium tier.
+export const partSize = (() => {
+	switch (uploadChannel.guild.premiumTier) {
+		case undefined:  // discord.js docs says this wont happen but it does
+			console.warn("[BOT] uploadChannel.guild.premiumTier missing, using default part size");
+		case Discord.GuildPremiumTier.None:
+		case Discord.GuildPremiumTier.Tier1:
+			return 25 * 1024 * 1024;
+		case Discord.GuildPremiumTier.Tier2:
+			return 50 * 1024 * 1024;
+		case Discord.GuildPremiumTier.Tier3:
+			return 100 * 1024 * 1024;
+	}
+})();
 
 
 interface UploadResult {
@@ -31,7 +41,6 @@ export async function uploadToDiscord(
 			name: filenames[i],
 		}));
 	}
-	const uploadChannel = await getUploadChannel();
 	const sentMessage = await uploadChannel.send({ files: attachments });
 	return {
 		messageID: sentMessage.id,

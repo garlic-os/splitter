@@ -67,9 +67,8 @@ export async function deleteFile(
 	const partEntries = db.getParts(fileID);
 	for (const { url, messageID } of partEntries) {
 		console.info(`[DELETE ${fileID}] Deleting message ${messageID}`);
-		const uploadChannel = await bot.getUploadChannel();
 		try {
-			const message = await uploadChannel.messages.fetch(messageID);
+			const message = await bot.uploadChannel.messages.fetch(messageID);
 			removalsInProgress.push(message.delete());
 		} catch (err: unknown) {
 			console.error(`[DELETE ${fileID}] Invalid message ID "${messageID}" from URL "${url}"; API returned error:`, err);
