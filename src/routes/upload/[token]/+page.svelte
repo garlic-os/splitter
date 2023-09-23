@@ -40,8 +40,8 @@
 	}
 
 
-	function handleResponse(response: XMLHttpRequest) {
-		switch (response.status) {
+	function handleResponse(xhr: XMLHttpRequest) {
+		switch (xhr.status) {
 			case StatusCodes.CREATED:
 				state = "done";
 				statusText = "✅ Upload complete! The download link has been posted in the chat.";
@@ -51,14 +51,14 @@
 				statusText = "❌ Token has expired or is invalid.";
 				break;
 			case StatusCodes.BAD_REQUEST:
-				if (response.responseText.includes("too large")) {
+				if (xhr.responseText.includes("too large")) {
 					state = "start";
 					statusText = `❌ File is too large. The maximum file size is ${humanFileSize(data.fileSizeLimit)}.`;
 					break;
 				}
 			default:
 				state = "start";
-				console.error({response});
+				console.error({ response: xhr, body: xhr.responseText });
 				statusText = "❌ Unexpected response from the server. Check the console for more info.";
 		}
 		percent = 0;
