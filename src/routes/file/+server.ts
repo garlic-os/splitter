@@ -43,14 +43,12 @@ async function splitAndUpload(
 	let bytesRead = 0;
 	const uploadingChunks = (async () => {
 		let partIndex = 0;
-		const chunkReader = chunkStream.readable.getReader();
 		const filePaths = [];
 
-		let result: ReadableStreamReadResult<Uint8Array>;
-		while (!(result = await chunkReader.read()).done) {
-			bytesRead += result.value.byteLength;
-			filePaths.push(await tempy.temporaryWrite(result.value));
+		for await (const chunk of chunkStream.readable) {
+			bytesRead += chunk.byteLength;
 			console.info(`[UPLOAD ${fileEntry.id}] Part ${filePaths.length}: ${chunk.byteLength} bytes`);
+			filePaths.push(await tempy.temporaryWrite(chunk));
 			if (filePaths.length >= 10) {
 				await uploadParts(filePaths, filename, partIndex, fileEntry.id);
 				partIndex += filePaths.length;
