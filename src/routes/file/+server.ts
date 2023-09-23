@@ -50,18 +50,16 @@ async function splitAndUpload(
 		while (!(result = await chunkReader.read()).done) {
 			bytesRead += result.value.byteLength;
 			filePaths.push(await tempy.temporaryWrite(result.value));
+			console.info(`[UPLOAD ${fileEntry.id}] Part ${filePaths.length}: ${chunk.byteLength} bytes`);
 			if (filePaths.length >= 10) {
 				await uploadParts(filePaths, filename, partIndex, fileEntry.id);
 				partIndex += filePaths.length;
 				filePaths.length = 0;
 			}
-			console.info(`[UPLOAD ${fileEntry.id}] Part ${partIndex}: ${result.value.byteLength} bytes`);
 		}
-
 		if (filePaths.length > 0) {
 			await uploadParts(filePaths, filename, partIndex, fileEntry.id);
 		}
-
 		console.info(`[UPLOAD ${fileEntry.id}] Chunk uploads complete`);
 	})();
 
