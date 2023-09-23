@@ -17,9 +17,10 @@ function exit() {
 process.on("exit", exit);
 process.on("uncaughtException", exit);
 
-// Under vite live reload, the Discord client doesn't get destroyed properly, so
-// we have to do it manually. I guess this is fine since live reload doesn't
-// happen in production.
+// Under vite live reload, the Discord client doesn't get destroyed properly so
+// we have to do it manually. A little horrorcode reaching into globalThis and
+// sidestepping the type system but I guess this is fine since it won't happen
+// in production.
 if (process.env.NODE_ENV === "development") {
 	if (globalThis.hasOwnProperty("client")) {
 		console.info("Destroying old bot instance");
