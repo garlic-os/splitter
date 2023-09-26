@@ -43,4 +43,6 @@ declare namespace DB {
 		contentType: DB.FileEntry["contentType"];
 		uploadNotifID: NonNullable<DB.FileEntry["uploadNotifID"]>;
 	}
+
+	type FileByToken = Pick<DB.FileEntry, "id" | "uploadExpiry">;
 }

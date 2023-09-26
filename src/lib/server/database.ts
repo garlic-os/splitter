@@ -122,10 +122,9 @@ export function deleteFile(id: string) {
 }
 
 
-type FileByToken = Pick<DB.FileEntry, "id" | "uploadExpiry">;
 export function getFileByToken(token: string | null) {
 	console.debug("Getting file by token");
-	const query = con.query<FileByToken | null, string | null>(`
+	const query = con.query<DB.FileByToken | null, string | null>(`
 		SELECT id, uploadExpiry
 		FROM files
 		WHERE uploadToken = ?

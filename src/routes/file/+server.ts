@@ -33,7 +33,7 @@ async function uploadParts(
 async function splitAndUpload(
 	stream: ReadableStream<Uint8Array>,
 	filename: string,
-	fileEntry: Pick<DB.FileEntry, "id" | "uploadExpiry">,
+	fileEntry: DB.FileByToken,
 ): Promise<number> {
 	// Pipe the stream into a StreamSlicer to size-condition its chunks.
 	const chunkStream = new StreamSlicer(bot.partSize);
