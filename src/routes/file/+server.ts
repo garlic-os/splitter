@@ -19,6 +19,7 @@ async function uploadParts(
 	for (let i = 0; i < filePaths.length; i++) {
 		filenames.push(`${filename}.part${partIndex + i}`);
 	}
+	console.info(`[UPLOAD ${fileID}] Sending parts ${partIndex} to ${partIndex + filePaths.length - 1} to Discord`);
 	const { messageID, urls } = await bot.uploadToDiscord(filePaths, filenames);
 	db.addParts(fileID, messageID, urls);
 }
