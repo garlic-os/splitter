@@ -69,7 +69,11 @@ async function splitAndUpload(
 }
 
 
-function reportUploadResult(fileID: string, filename: string, bytesRead: number) {
+function reportUploadResult(
+	fileID: string,
+	filename: string,
+	bytesRead: number
+): void {
 	const pendingUpload = db.pendingUploads[fileID];
 	if (!pendingUpload) {
 		console.error(`[${fileID}] No pending upload found`);
