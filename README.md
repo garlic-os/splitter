@@ -1,41 +1,38 @@
 # Splitter
+<!-- Invite link here eventually -->
 [Project progress](https://github.com/users/garlic-os/projects/4/views/1?query=is%3Aopen+sort%3Aupdated-desc&layout=board)
 
-Splitter is a Discord bot that offers one utility: upload files larger than the server's file size limit.
-There are plenty of ways to do this already: split it with 7-Zip and upload the several chunks one at a time, or just upload it somewhere else then post the link, etc. But all the solutions out there make it a fair bit more complicated for you and/or whoever wants to open it than if it were just a regular file in Discord.
+Splitter lets you upload big files to Discord.  
+Unlike third-party file-sharing services (Google Drive, file.io, etc.), Splitter integrates with Discord to make it seamless and free forever.
 
-Splitter aims to provide a standard way for users to do this on Discord as easily as possible.
-With Splitter,
-1. You don't split files yourself. Splitter splits them for you and uploads the chunks to Discord in the background.
-2. You don't need to paste a download link. When the upload is done, the link is posted for you.
-3. You barely need to leave Discord at all. Start in Discord, click your link and upload to Splitter's minimal webapp, then go right back to Discord.
-4. When someone wants to download your file, they click the link, the webapp reconstitutes the file, and it shows up in the browser.
+1. **Nearly everything happens from within Discord.** Start in Discord, upload your file in the minimal webapp, then go right back.
+2. **No extra accounts.** You're already logged into Discord and that's good enough!
+3. **Your files stay on Discord.** Behind the scenes, Splitter _splits_ large files and stores them on Discord in chunks.
+4. **It's free.** No Nitro, no storage fees, no subscription.
 
-Splitter aims to make the experience as close as can be to just uploading any regular file to Discord. Except your file can be ten gigabytes.
+## Getting started
+Once Splitter is closer to completion I'll have an instance running for you to invite to your own servers. For now if you want to try it out you will have to host your own instance.
 
-## Setup
-Splitter runs on [Bun](https://bun.sh/)
+## Host your own instance
+Splitter runs on [Bun](https://bun.sh/).
 
-Install your dependencies with `bun install`, then register the bot's slash commands:
+To install your dependencies and add Splitter's slash commands to its bot account:
 ```bash
-bun --bun run register-commands
-```
-You only need to register the slash commands once per bot account.
-
-## Development
-```bash
-bun --bun run dev
-```
-When in dev mode, a quirk in Vite makes it so you have to open the webapp once for the bot to start.
-
-## Production
-```bash
-bun --bun run host
+$ bun install
+$ bun --bun run register-commands
 ```
 
-​
+### Development
+```bash
+$ bun --bun run dev -- --open
+```
+_(A quirk in Vite makes it so you have to open the webapp once for the bot to start while in dev mode)_
 
-Public bot instance coming maybe?
+### Production
+```bash
+$ bun --bun run host
+```
+
 
 ---
 Upload icon from [visualpharm.com](https://www.visualpharm.com/)  
