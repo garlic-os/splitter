@@ -16,9 +16,9 @@ export class FileMenu {
 	private navButtons?: Discord.ActionRowBuilder<Discord.ButtonBuilder>;
 	private menu?: Discord.InteractionResponse;
 	private fileList: Discord.APIEmbedField[] = [];
-	private index: number = 0;
+	private index = 0;
 	private sortBy: SortableAttribute = "name";
-	private disabled: boolean = false;
+	private disabled = false;
 
 	constructor(interaction: Discord.ChatInputCommandInteraction) {
 		this.interaction = interaction;
@@ -41,7 +41,7 @@ export class FileMenu {
 		return {
 			name: "​",
 			value: `\`${name}\`\n` +
-				   `${contentType.split("/")[0]} • ${timeCode}`,
+			       `${contentType.split("/")[0]} • ${timeCode}`,
 			inline: false
 		};
 	}
