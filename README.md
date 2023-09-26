@@ -14,24 +14,23 @@ With Splitter,
 Splitter aims to make the experience as close as can be to just uploading any regular file to Discord. Except your file can be ten gigabytes.
 
 ## Setup
-Install your dependencies with `npm install` (or `pnpm install` or `yarn`), then register the bot's slash commands:
+Splitter runs on [Bun](https://bun.sh/)
+
+Install your dependencies with `bun install`, then register the bot's slash commands:
 ```bash
-npm run register-commands
+bun --bun run register-commands
 ```
 You only need to register the slash commands once per bot account.
 
 ## Development
 ```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+bun --bun run dev
 ```
 When in dev mode, a quirk in Vite makes it so you have to open the webapp once for the bot to start.
 
 ## Production
 ```bash
-npm run host
+bun --bun run host
 ```
 
 ​
