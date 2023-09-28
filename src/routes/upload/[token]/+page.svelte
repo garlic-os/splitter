@@ -3,12 +3,14 @@
 	import type { FileChangeEventDetail } from "$lib/components/UploadArea.svelte";
 	import UploadArea from "$lib/components/UploadArea.svelte";
 	import ProgressBar from "$lib/components/ProgressBar.svelte";
+	import Skeleton from "$lib/components/Skeleton.svelte";
+	import { onMount } from "svelte";
 	import humanFileSize from "$lib/utils/human-file-size";
 	import StatusCodes from "http-status-codes";
 
 	export let data: PageServerData;
 
-	let state: "start" | "uploading" | "done" = "start";
+	let state: "loading" | "start" | "uploading" | "done" = "loading";
 	let statusText = "";
 	let percent = 0;  // [0-100]
 
@@ -78,6 +80,10 @@
 			statusText = "❌ Failed to upload the file. Check the console for more info.";
 		}
 	}
+
+	onMount(() => {
+		state = "start";
+	});
 </script>
 
 
@@ -90,7 +96,9 @@
 <h2>Upload</h2>
 <div class="upload">
 	<p>{statusText}</p>
-	{#if state === "start"}
+	{#if state === "loading"}
+		<Skeleton />
+	{:else if state === "start"}
 		<UploadArea on:fileChange={upload} />
 	{:else if state === "uploading" && percent !== 100}
 		<ProgressBar {percent}/>
