@@ -7,6 +7,15 @@ import * as CorsProxy from "./src/lib/server/cors-proxy";
 
 const viteConfig: UserConfig = {
 	plugins: [sveltekit()],
+	server: {
+		watch: {
+			ignored: [
+				"**/node_modules/**",
+				"**/src/lib/server/**",
+				"**vite.config.ts**"
+			]
+		}
+	}
 };
 
 Object.assign(viteConfig, CorsProxy.viteConfig);
