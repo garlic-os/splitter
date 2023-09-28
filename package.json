@@ -4,15 +4,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "bun run ./build/index.js",
+    "start": "bun ./build/index.js",
     "dev": "vite dev",
     "build": "vite build",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "lint": "eslint .",
     "register-commands": "run-script-os",
-    "register-commands:default": "REGISTER_COMMANDS=1 bun --bun run dev -- --open",
-    "register-commands:win32": "set REGISTER_COMMANDS=1 && bun --bun run dev -- --open"
+    "register-commands:default": "REGISTER_COMMANDS=1 bun --bun dev -- --open",
+    "register-commands:win32": "set REGISTER_COMMANDS=1 && bun --bun dev -- --open"
   },
   "devDependencies": {
     "@sveltejs/kit": "^1.15.7",
