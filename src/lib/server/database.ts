@@ -3,7 +3,7 @@ import * as Config from "$config";
 
 
 const con = new Database(Config.databasePath);
-console.info("Database connected");
+console.info("[DB] Connected");
 
 con.run("PRAGMA journal_mode = WAL");
 con.run("PRAGMA foreign_keys = ON");
@@ -28,8 +28,8 @@ con.run(`
 
 
 function exit() {
-	console.info("Disconnecting from database");
 	con.close();
+	console.info("[DB] Closed connection");
 }
 process.on("exit", exit);
 process.on("uncaughtException", exit);
@@ -40,7 +40,7 @@ export const pendingUploads: { [fileID: string]: DB.PendingUpload } = {};
 
 // Update the file's name and content type
 export function setMetadata(id: string, name: string, contentType: string) {
-	console.debug("Setting metadata", { id, name, contentType });
+	console.debug("[DB] Setting metadata", { id, name, contentType });
 	const query = con.query<null, [string, string, string]>(`
 		UPDATE files
 		SET name = ?, contentType = ?
@@ -52,7 +52,7 @@ export function setMetadata(id: string, name: string, contentType: string) {
 
 type Metadata = Pick<DB.FileEntry, "name" | "contentType" | "ownerID">;
 export function getMetadata(id: string) {
-	console.debug("Getting metadata", { id });
+	console.debug("[DB] Getting metadata", { id });
 	const query = con.query<Metadata | null, string>(`
 		SELECT name, contentType, ownerID
 		FROM files
@@ -63,7 +63,7 @@ export function getMetadata(id: string) {
 
 
 export function getURLs(fileID: string) {
-	console.debug("Getting URLs", { fileID });
+	console.debug("[DB] Getting URLs", { fileID });
 	const query = con.query<string, string>(`
 		SELECT url
 		FROM parts
@@ -78,7 +78,7 @@ export const addParts = con.transaction((
 	messageID: string,
 	urls: string[]
 ) => {
-	console.debug("Adding parts", { fileID, messageID, urls });
+	console.debug("[DB] Adding parts", { fileID, messageID, urls });
 	const query = con.query<null, [string, string, string]>(`
 		INSERT INTO parts
 		(fileID, messageID, url)
@@ -91,7 +91,7 @@ export const addParts = con.transaction((
 
 
 export function getParts(fileID: string) {
-	console.debug("Getting parts", { fileID });
+	console.debug("[DB] Getting parts", { fileID });
 	const query = con.query<Omit<DB.PartEntry, "fileID">, string>(`
 		SELECT messageID, url
 		FROM parts
@@ -102,7 +102,7 @@ export function getParts(fileID: string) {
 
 
 export function closeUpload(id: string) {
-	console.debug("Closing upload", { id });
+	console.debug("[DB] Closing upload", { id });
 	const query = con.query<null, string>(`
 		UPDATE files
 		SET uploadExpiry = 0
@@ -113,7 +113,7 @@ export function closeUpload(id: string) {
 
 
 export function deleteFile(id: string) {
-	console.debug("Deleting file", { id });
+	console.debug("[DB] Deleting file", { id });
 	const query = con.query<null, string>(`
 		DELETE FROM files
 		WHERE id = ?
@@ -123,7 +123,7 @@ export function deleteFile(id: string) {
 
 
 export function getFileByToken(token: string | null) {
-	console.debug("Getting file by token");
+	console.debug("[DB] Getting file by token");
 	const query = con.query<DB.FileByToken | null, string | null>(`
 		SELECT id, uploadExpiry
 		FROM files
@@ -138,7 +138,7 @@ interface FilenameAndID {
 	name: NonNullable<DB.FileEntry["name"]>;
 }
 export function getFilenamesAndIDByAuthorID(ownerID: string, startsWith = "") {
-	console.debug("Getting filenames and IDs by author ID", { ownerID, startsWith });
+	console.debug("[DB] Getting filenames and IDs by author ID", { ownerID, startsWith });
 	const query = con.query<FilenameAndID, [string, string]>(`
 		SELECT id, name
 		FROM files
@@ -153,7 +153,7 @@ export function getFilenamesAndIDByAuthorID(ownerID: string, startsWith = "") {
 export function setUploadInfo(
 	fileID: string, channelID: string, messageID: string
 ) {
-	console.debug("Setting upload info", { fileID, channelID, messageID });
+	console.debug("[DB] Setting upload info", { fileID, channelID, messageID });
 	const query = con.query<null, [string, string, string]>(`
 		UPDATE files
 		SET channelID = ?, uploadNotifID = ?
@@ -165,7 +165,7 @@ export function setUploadInfo(
 
 type UploadInfo = Pick<DB.FileEntry, "channelID" | "uploadNotifID">;
 export function getUploadInfo(fileID: string) {
-	console.debug("Getting upload info", { fileID });
+	console.debug("[DB] Getting upload info", { fileID });
 	const query = con.query<UploadInfo | null, string>(`
 		SELECT channelID, uploadNotifID
 		FROM files
@@ -181,7 +181,7 @@ export function getFiles(
 	// ownerID: string, iStart: number, iEnd: number, sortBy: SortableAttribute
 	ownerID: string, iStart: number, iEnd: number, sortBy: string
 ) {
-	console.debug("Getting file information", { ownerID, iStart, iEnd, sortBy });
+	console.debug("[DB] Getting file information", { ownerID, iStart, iEnd, sortBy });
 	if (sortBy === "fileExt") {
 		// const query = con.query<FileListEntry, [string, number, number]>(`
 		// 	SELECT name, contentType, uploadNotifID
@@ -211,7 +211,7 @@ export function getFiles(
 
 
 export function getFileCount(ownerID: string): number {
-	console.debug("Getting file count", { ownerID });
+	console.debug("[DB] Getting file count", { ownerID });
 	const query = con.query<{"COUNT(*)": number}, string>(`
 		SELECT COUNT(*)
 		FROM files
@@ -244,7 +244,7 @@ interface FileExportSQLRow {
 	messageIDs: DB.PartEntry["messageID"];
 }
 export function getFilesByOwnerID(ownerID: string): FileExport[] {
-	console.debug("Getting files by owner ID", { ownerID });
+	console.debug("[DB] Getting files by owner ID", { ownerID });
 	const query = con.query<FileExportSQLRow, string>(`
 		SELECT
 			id,
@@ -293,7 +293,7 @@ export function generateToken(): string {
 function addFile(
 	fileID: string, ownerID: string, token: string, expiry: number
 ) {
-	console.debug("Adding file", { fileID, ownerID, expiry });
+	console.debug("[DB] Adding file", { fileID, ownerID, expiry });
 	const query = con.query<null, [string, string, string, number]>(`
 		INSERT INTO files
 		(id, ownerID, uploadToken, uploadExpiry)

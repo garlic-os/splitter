@@ -2,17 +2,17 @@
 import Discord from "discord.js";
 import * as Config from "$config";
 
-console.info("Bot starting");
+console.info("[BOT] Starting");
 export const client = new Discord.Client({ intents: [] });
 
 client.on(Discord.Events.ClientReady, async () => {
-	console.log(`Bot logged in as ${client.user!.tag}`);
+	console.log(`[BOT] Logged in as ${client.user!.tag}`);
 });
 
 
 function exit() {
 	client.destroy();
-	console.info("Bot logged out");
+	console.info("[BOT] Logged out");
 }
 process.on("exit", exit);
 process.on("uncaughtException", exit);

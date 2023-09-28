@@ -1,7 +1,7 @@
 import type { UserConfig } from "vite";
 
-// Have to use normal relative paths here because this file is loaded
-// by vite.config.ts before the $config shortcut is loaded.
+// Have to use normal relative paths here because vite.config.ts imports
+// this file before the $config shortcut is loaded.
 import * as Config from "../../../config";
 
 

@@ -15,7 +15,7 @@ export const uploadChannel = channel;
 export const partSize = (() => {
 	switch (uploadChannel.guild.premiumTier) {
 		case undefined:  // discord.js docs says this wont happen but it does
-			console.warn("[BOT] uploadChannel.guild.premiumTier missing, using default part size");
+			console.warn("[BOT] uploadChannel.guild.premiumTier is missing; using default part size");
 		case Discord.GuildPremiumTier.None:
 		case Discord.GuildPremiumTier.Tier1:
 			return 25 * 1024 * 1024;
