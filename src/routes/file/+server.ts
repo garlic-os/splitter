@@ -1,7 +1,7 @@
 import type { RequestHandler } from "./$types";
 import { error } from "@sveltejs/kit";
 import StatusCodes from "http-status-codes";
-import tempy from "tempy";
+import * as tempy from "tempy";
 import * as Config from "$config";
 import * as db from "$lib/server/database";
 import * as bot from "$lib/server/bot";
