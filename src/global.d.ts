@@ -22,7 +22,7 @@ declare namespace DB {
 		uploadNotifID: string | null;
 	}
 
-	interface PartEntry {
+	interface ChunkEntry {
 		fileID: string;
 		messageID: string;
 		url: string;

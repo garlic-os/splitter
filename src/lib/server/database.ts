@@ -19,7 +19,7 @@ con.run(`
 		uploadNotifID  TEXT     DEFAULT NULL
 	) STRICT;
 
-	CREATE TABLE IF NOT EXISTS parts (
+	CREATE TABLE IF NOT EXISTS chunks (
 		fileID     TEXT  REFERENCES files(id) ON DELETE CASCADE,
 		messageID  TEXT  NOT NULL,
 		url        TEXT  NOT NULL
@@ -66,21 +66,21 @@ export function getURLs(fileID: string) {
 	console.debug("[DB] Getting URLs", { fileID });
 	const query = con.query<string, string>(`
 		SELECT url
-		FROM parts
+		FROM chunks
 		WHERE fileID = ?
 	`);
 	return query.all(fileID);
 }
 
 
-export const addParts = con.transaction((
+export const addChunks = con.transaction((
 	fileID: string,
 	messageID: string,
 	urls: string[]
 ) => {
-	console.debug("[DB] Adding parts", { fileID, messageID, urls });
+	console.debug("[DB] Adding chunks", { fileID, messageID, urls });
 	const query = con.query<null, [string, string, string]>(`
-		INSERT INTO parts
+		INSERT INTO chunks
 		(fileID, messageID, url)
 		VALUES (?, ?, ?)
 	`);
@@ -90,11 +90,11 @@ export const addParts = con.transaction((
 });
 
 
-export function getParts(fileID: string) {
-	console.debug("[DB] Getting parts", { fileID });
-	const query = con.query<Omit<DB.PartEntry, "fileID">, string>(`
+export function getChunks(fileID: string) {
+	console.debug("[DB] Getting chunks", { fileID });
+	const query = con.query<Omit<DB.ChunkEntry, "fileID">, string>(`
 		SELECT messageID, url
-		FROM parts
+		FROM chunks
 		WHERE fileID = ?
 	`);
 	return query.all(fileID);
@@ -229,9 +229,9 @@ interface FileExport {
 	contentType: DB.FileEntry["contentType"];
 	channelID: DB.FileEntry["channelID"];
 	uploadNotifID: DB.FileEntry["uploadNotifID"];
-	parts: {
-		urls: DB.PartEntry["url"][];
-		messageIDs: DB.PartEntry["messageID"][];
+	chunks: {
+		urls: DB.ChunkEntry["url"][];
+		messageIDs: DB.ChunkEntry["messageID"][];
 	};
 }
 interface FileExportSQLRow {
@@ -240,8 +240,8 @@ interface FileExportSQLRow {
 	contentType: DB.FileEntry["contentType"];
 	channelID: DB.FileEntry["channelID"];
 	uploadNotifID: DB.FileEntry["uploadNotifID"];
-	urls: DB.PartEntry["url"];
-	messageIDs: DB.PartEntry["messageID"];
+	urls: DB.ChunkEntry["url"];
+	messageIDs: DB.ChunkEntry["messageID"];
 }
 export function getFilesByOwnerID(ownerID: string): FileExport[] {
 	console.debug("[DB] Getting files by owner ID", { ownerID });
@@ -256,8 +256,8 @@ export function getFilesByOwnerID(ownerID: string): FileExport[] {
 			GROUP_CONCAT(messageID) AS messageIDs
 		FROM
 			files
-			INNER JOIN parts
-				ON parts.fileID = id
+			INNER JOIN chunks
+				ON chunks.fileID = id
 		WHERE
 			ownerID = ?
 	`);
@@ -270,7 +270,7 @@ export function getFilesByOwnerID(ownerID: string): FileExport[] {
 			contentType: row.contentType,
 			channelID: row.channelID,
 			uploadNotifID: row.uploadNotifID,
-			parts: {
+			chunks: {
 				urls: row.urls.split(" "),
 				messageIDs: row.messageIDs.split(" ")
 			}

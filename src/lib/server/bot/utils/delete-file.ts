@@ -45,7 +45,7 @@ async function getNotificationMessage(
 
 // Delete every place where a bit of a file is stored:
 // 1. The message posted when the file was uploaded.
-// 2. The messages that contain the file's parts.
+// 2. The messages that contain the file's chunks.
 // 3. The file entry in the database.
 export async function deleteFile(
 	client: Discord.Client,
@@ -63,9 +63,9 @@ export async function deleteFile(
 		encounteredError = true;
 	}
 
-	// Delete the messages on Discord that contained the file's parts.
-	const partEntries = db.getParts(fileID);
-	for (const { url, messageID } of partEntries) {
+	// Delete the messages on Discord that contained the file's chunks.
+	const chunkEntries = db.getChunks(fileID);
+	for (const { url, messageID } of chunkEntries) {
 		console.info(`[DELETE ${fileID}] Deleting message ${messageID}`);
 		try {
 			const message = await bot.uploadChannel.messages.fetch(messageID);
