@@ -20,7 +20,11 @@ function getGeneralContentType(
 }
 
 
-export const load = (({ params }) => {
+export const load = (({ params, setHeaders }) => {
+	setHeaders({
+		"cache-control": "max-age=60",
+	});
+	
 	const urls = DB.getURLs(params.fileID)
 		.map(url => `/chunk/${url.replace("https://cdn.discordapp.com/attachments/", "")}`);
 	if (urls.length === 0) {

@@ -5,7 +5,11 @@ import * as DB from "$lib/server/database";
 import * as Config from "$config";
 
 
-export const load = (({ params }) => {
+export const load = (({ params, setHeaders }) => {
+	setHeaders({
+		"cache-control": "max-age=60",
+	});
+
 	// Check if a file entry exists for this token, and that the file's
 	// upload period has not expired.
 	const fileEntry = DB.getFileByToken(params.token);
