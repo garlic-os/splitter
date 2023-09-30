@@ -39,6 +39,8 @@
 	}
 
 
+	// Put the file downloading code in an onMount hook so SvelteKit doesn't
+	// pre-render it on the server (that would defeat the point)
 	onMount(async () => {
 		data.urls.sort();
 		const blobPromises = [];
